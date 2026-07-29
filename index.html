@@ -38,7 +38,7 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-body, html { width: 100%; height: 100%; overflow: hidden; background: linear-gradient(135deg, #ffd6e7, #e2c6ff, #b5e2ff); font-family: 'Paperozi', 'Galmuri9', sans-serif; color: var(--text-color); }
+body, html { width: 100%; height: 100%; min-height: 100dvh; overflow: hidden; background: linear-gradient(135deg, #ffd6e7, #e2c6ff, #b5e2ff); font-family: 'Paperozi', 'Galmuri9', sans-serif; color: var(--text-color); }
 
 #game-container { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; }
 #game-container:active { cursor: grabbing; }
@@ -136,7 +136,7 @@ canvas { display: block; width: 100%; height: 100%; }
 .item-cost.ultra { color: #f72585; font-weight: bold; text-shadow: 0 0 6px rgba(247, 37, 133, 0.5); font-size: 13px; }
 
 /* MODAL OVERLAYS & PANELS */
-.modal-overlay { position: fixed; inset: 0; background: rgba(74, 62, 86, 0.5); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(6px); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(74, 62, 86, 0.5); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(6px); overflow-y: auto; padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
 .retro-modal-box { width: 90%; max-width: 520px; display: flex; flex-direction: column; border: 3px solid #ffb7d5; box-shadow: 0 15px 35px rgba(255, 183, 213, 0.4); border-radius: 24px; overflow: hidden; }
 
 /* QUIZ STYLING */
@@ -198,15 +198,106 @@ canvas { display: block; width: 100%; height: 100%; }
 .outro-card-title { font-size: 12px; color: #78688b; margin-bottom: 4px; font-weight: bold; }
 .outro-card-value { font-size: 20px; font-weight: bold; color: #4a3e56; }
 
-@media (max-width: 600px) {
-    #build-window { width: 95%; right: 2.5%; bottom: 74px; max-height: 50vh; }
-    .hud-item { font-size: 13px; }
-    .quiz-text { font-size: 16px; }
-    .tool-btn { width: 44px; height: 44px; font-size: 18px; }
-    .intro-title, .outro-title-fx { font-size: 26px; }
-    .intro-sub-title { font-size: 14px; }
-    .outro-grid { grid-template-columns: 1fr; gap: 8px; }
-    .outro-card-value { font-size: 16px; }
+@media (max-width: 700px) {
+    #top-hud {
+        top: max(6px, env(safe-area-inset-top));
+        left: max(6px, env(safe-area-inset-left));
+        right: max(6px, env(safe-area-inset-right));
+        height: auto;
+        min-height: 44px;
+        padding: 5px 8px;
+        gap: 4px 8px;
+        flex-wrap: wrap;
+        border-radius: 16px;
+    }
+    .hud-item { font-size: 12px; gap: 3px; white-space: nowrap; }
+    .hud-icon { width: 22px; height: 22px; font-size: 12px; }
+    .hud-actions { width: 100%; margin-left: 0 !important; justify-content: flex-end; gap: 5px !important; }
+    .hud-actions .retro-button { min-height: 32px; padding: 4px 9px !important; font-size: 11px !important; }
+    #entrance-warning { position: absolute; top: calc(100% + 4px); left: 0; padding: 4px 8px; background: rgba(255,255,255,.94); border-radius: 10px; }
+
+    #bgm-panel {
+        top: calc(max(6px, env(safe-area-inset-top)) + 82px);
+        left: max(6px, env(safe-area-inset-left));
+        padding: 5px 7px;
+        gap: 4px;
+        border-radius: 13px;
+    }
+    #bgm-panel .retro-button { min-height: 32px; padding: 4px 7px !important; font-size: 10px !important; }
+    #bgm-track-info { display: none; }
+
+    #bottom-toolbar {
+        right: max(6px, env(safe-area-inset-right));
+        bottom: max(6px, env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-columns: repeat(3, 46px);
+        gap: 5px;
+    }
+    .tool-btn { width: 46px; height: 46px; min-height: 44px; font-size: 18px; border-radius: 13px; }
+    .tool-btn span { font-size: 9px; }
+    #quiz-trigger-btn {
+        left: max(6px, env(safe-area-inset-left));
+        bottom: max(6px, env(safe-area-inset-bottom));
+        width: min(42vw, 154px);
+        height: 46px;
+        padding: 0 10px;
+        font-size: 12px;
+        line-height: 1.2;
+        text-align: center;
+    }
+    #build-window {
+        width: calc(100% - max(12px, env(safe-area-inset-left)) - max(12px, env(safe-area-inset-right)));
+        right: max(6px, env(safe-area-inset-right));
+        bottom: calc(max(6px, env(safe-area-inset-bottom)) + 102px);
+        max-height: min(54dvh, 430px);
+    }
+    .window-content { grid-template-columns: repeat(3, minmax(0, 1fr)); max-height: calc(min(54dvh, 430px) - 42px); padding: 7px; gap: 6px; }
+    .build-item { padding: 8px 3px; min-width: 0; }
+    .item-icon { font-size: 27px; }
+    .item-name { font-size: 11px; }
+    .item-cost { font-size: 10px; }
+    #build-cursor-tip { top: 126px !important; width: min(88%, 360px); padding: 7px 12px !important; font-size: 11px !important; }
+    #toast-notification { top: 116px !important; max-width: 90%; padding: 9px 14px !important; font-size: 12px !important; text-align: center; }
+
+    .modal-overlay { align-items: flex-start; }
+    .retro-modal-box, .intro-box, .teacher-box, .outro-box { max-height: calc(100dvh - 20px); margin: auto !important; }
+    .intro-box, .outro-box { padding: 18px !important; overflow-y: auto; }
+    .intro-title, .outro-title-fx { font-size: 24px; }
+    .intro-sub-title { font-size: 13px; margin-bottom: 10px; }
+    .start-btn-group { gap: 8px; margin-top: 12px; }
+    .start-btn { min-height: 46px; font-size: 15px; padding: 11px; }
+    .quiz-header-bar { padding: 9px 10px; }
+    .unit-select-dropdown { max-width: 52%; font-size: 11px; }
+    .quiz-content { padding: 14px; overflow-y: auto; }
+    .quiz-text { font-size: 16px; margin-bottom: 14px; }
+    .quiz-option { min-height: 46px; padding: 11px; font-size: 14px; }
+    .short-answer-container { flex-wrap: wrap; }
+    .short-answer-input { min-width: 0; padding: 11px; }
+    .short-answer-submit { min-height: 44px; padding: 0 16px; }
+    .quiz-action-buttons { flex-direction: column; }
+    .teacher-content { padding: 10px; }
+    .questions-table { display: block; overflow-x: auto; white-space: nowrap; }
+    .outro-grid { grid-template-columns: 1fr 1fr; gap: 7px; }
+    .outro-card { padding: 9px; }
+    .outro-card-value { font-size: 14px; }
+}
+
+@media (max-width: 370px) {
+    .hud-item { font-size: 11px; }
+    #bottom-toolbar { grid-template-columns: repeat(3, 43px); }
+    .tool-btn { width: 43px; height: 43px; }
+    .window-content { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+    #top-hud { top: 5px; left: 5px; right: 5px; }
+    #bgm-panel { top: 54px; left: 5px; }
+    #bottom-toolbar { bottom: 5px; right: 5px; }
+    #quiz-trigger-btn { bottom: 5px; left: 5px; }
+    #build-window { bottom: 64px; max-height: calc(100dvh - 122px); }
+    .window-content { max-height: calc(100dvh - 164px); grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .intro-box, .outro-box { padding: 14px !important; }
+    .start-btn-group { display: grid; grid-template-columns: 1fr 1fr; }
 }
 #build-cursor-tip { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); color: #ff4d6d; padding: 10px 20px; border-radius: 20px; font-size: 14px; pointer-events: none; display: none; z-index: 10; text-align: center; border: 2px solid #ffb7d5; box-shadow: 0 4px 15px rgba(255, 183, 213, 0.4); font-weight: bold; }
 #toast-notification { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #ff4d6d; border: 2px solid #ffb7d5; padding: 12px 24px; border-radius: 20px; font-weight: bold; font-size: 15px; z-index: 300; display: none; box-shadow: 0 6px 20px rgba(255, 183, 213, 0.4); }
@@ -432,7 +523,7 @@ canvas { display: block; width: 100%; height: 100%; }
     <div class="hud-item" title="방문객 수"><div class="hud-icon">🚶</div><span id="guest-count">0</span>명<span id="entrance-warning">⚠️ 입구를 건설하세요!</span></div>
     <div class="hud-item" title="자금"><div class="hud-icon">💰</div><span id="money-count" class="hud-money">₩ 5,000</span></div>
     <div class="hud-item" title="공원 가치"><div class="hud-icon">⭐</div><span id="rating-count">0</span></div>
-    <div style="margin-left: auto; display: flex; gap: 8px;">
+    <div class="hud-actions" style="margin-left: auto; display: flex; gap: 8px;">
             <button class="retro-button" style="padding: 6px 14px; font-size: 13px; background: linear-gradient(135deg, #b9fbc0, #74c69d); color: #1b4332;" onclick="manualSaveGame()">💾 저장하기</button>
             <button class="retro-button" style="padding: 6px 14px; font-size: 13px; background: linear-gradient(135deg, #ffd6e7, #ff8fab); color: #4a1525;" onclick="goToHomeScreen()">🏠 홈으로</button>
         </div>
@@ -1721,17 +1812,32 @@ function initCanvas() {
 function centerCamera() {
     if (!canvas) return;
     camX = 0;
-    camY = window.innerHeight / 2 - (GRID_SIZE * TILE_H / 2);
+    camY = canvas.height / 2 - (GRID_SIZE * TILE_H / 2);
 }
 
 function resize() {
     if (!canvas) return;
+    const isFirstResize = canvas.dataset.sized !== 'true';
+    const previousWidth = canvas.width || window.innerWidth;
+    const previousHeight = canvas.height || window.innerHeight;
+    const wasMobile = previousWidth <= 700;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    canvas.dataset.sized = 'true';
+    const isMobile = canvas.width <= 700;
+    if (isMobile) {
+        const usableWidth = Math.max(280, canvas.width - 24);
+        const usableHeight = Math.max(220, canvas.height - 190);
+        const fitScale = Math.min(usableWidth / (GRID_SIZE * TILE_W), usableHeight / (GRID_SIZE * TILE_H), 0.72);
+        if (isFirstResize || !wasMobile || Math.abs(previousWidth - canvas.width) > 80 || Math.abs(previousHeight - canvas.height) > 80) {
+            currentScale = Math.max(0.3, fitScale);
+            centerCamera();
+        }
+    }
 }
 
 window.addEventListener("resize", resize);
-window.addEventListener("orientationchange", () => setTimeout(resize, 100));
+window.addEventListener("orientationchange", () => setTimeout(() => { resize(); centerCamera(); }, 100));
 
 function toScreen(r, c) {
     if (!canvas) return { x: 0, y: 0 };
