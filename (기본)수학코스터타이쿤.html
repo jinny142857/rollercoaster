@@ -3,422 +3,144 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>양배추 수학 코스터 타이쿤</title>
-<!-- Supabase Client JS SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>수학 코스터 타이쿤</title>
 <style>
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-1Thin.woff2') format('woff2');
-    font-weight: 100;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
-    font-weight: 400;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
-    font-weight: 700;
-    font-display: swap;
-}
-
-:root {
-    --pastel-pink: #ffb7d5;
-    --pastel-pink-soft: #ffe5ec;
-    --pastel-blue: #b5e2ff;
-    --pastel-purple: #e2c6ff;
-    --pastel-yellow: #fff3b0;
-    --pastel-green: #c1fba4;
-    --text-color: #4a3e56;
-    --money-green: #20bf6b;
-}
-
+@import url('https://fonts.googleapis.com/css2?family=Galmuri9&family=Noto+Sans+KR:wght@400;700&display=swap');
+:root { --tycoon-bg: #405850; --tycoon-border-light: #688878; --tycoon-border-dark: #203028; --tycoon-text: #ffffff; --tycoon-text-dark: #111111; --tycoon-green: #3a7336; --tycoon-green-dark: #2b5a26; --money-green: #44ff44; }
 * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-body, html { width: 100%; height: 100%; overflow: hidden; background: linear-gradient(135deg, #ffd6e7, #e2c6ff, #b5e2ff); font-family: 'Paperozi', 'Galmuri9', sans-serif; color: var(--text-color); }
-
+body, html { width: 100%; height: 100%; overflow: hidden; background-color: #2b3a32; font-family: 'Galmuri9', 'Tahoma', 'Noto Sans KR', sans-serif; }
 #game-container { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; }
 #game-container:active { cursor: grabbing; }
 canvas { display: block; width: 100%; height: 100%; }
-
-/* PASTEL UNICORN PANEL & BUTTONS */
-.retro-panel {
-    background: rgba(255, 255, 255, 0.92);
-    border: 3px solid #f2c6de;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(226, 198, 255, 0.4);
-    color: var(--text-color);
-    backdrop-filter: blur(8px);
-}
-
-.retro-button {
-    background: linear-gradient(135deg, #ffc6ff, #bdb2ff);
-    border: 2px solid #ffffff;
-    border-radius: 14px;
-    color: #4a3e56;
-    cursor: pointer;
-    font-family: inherit;
-    font-weight: bold;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    box-shadow: 0 4px 12px rgba(189, 178, 255, 0.4);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-}
-
-.retro-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(189, 178, 255, 0.6);
-}
-
-.retro-button:active, .retro-button.active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 6px rgba(189, 178, 255, 0.3);
-}
-
-#btn-demolish.selected {
-    background: linear-gradient(135deg, #ff758f, #ff4d6d);
-    color: #ffffff;
-    border-color: #fff;
-}
-
-/* TOP HUD */
-#top-hud {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    right: 12px;
-    height: 44px;
-    background: rgba(255, 255, 255, 0.88);
-    border: 2px solid #f2c6de;
-    border-radius: 22px;
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 15px;
-    z-index: 10;
-    box-shadow: 0 6px 20px rgba(255, 183, 213, 0.3);
-    backdrop-filter: blur(10px);
-}
-
-.hud-item { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: bold; color: #4a3e56; }
+.retro-panel { background: var(--tycoon-bg); border-top: 2px solid var(--tycoon-border-light); border-left: 2px solid var(--tycoon-border-light); border-right: 2px solid var(--tycoon-border-dark); border-bottom: 2px solid var(--tycoon-border-dark); color: var(--tycoon-text); }
+.retro-button { background: #507060; border-top: 2px solid var(--tycoon-border-light); border-left: 2px solid var(--tycoon-border-light); border-right: 2px solid var(--tycoon-border-dark); border-bottom: 2px solid var(--tycoon-border-dark); color: var(--tycoon-text); cursor: pointer; font-family: inherit; text-shadow: 1px 1px 0px #000; }
+.retro-button:active, .retro-button.active { border-top: 2px solid var(--tycoon-border-dark); border-left: 2px solid var(--tycoon-border-dark); border-right: 2px solid var(--tycoon-border-light); border-bottom: 2px solid var(--tycoon-border-light); background: #385045; padding-top: 2px; padding-left: 2px; }
+#btn-demolish.selected { background: #aa3333; border-top: 2px solid var(--tycoon-border-dark); border-left: 2px solid var(--tycoon-border-dark); border-right: 2px solid var(--tycoon-border-light); border-bottom: 2px solid var(--tycoon-border-light); padding-top: 2px; padding-left: 2px; }
+#top-hud { position: absolute; top: 0; left: 0; right: 0; height: 32px; background: rgba(32, 48, 40, 0.85); border-bottom: 2px solid var(--tycoon-border-dark); display: flex; align-items: center; padding: 0 10px; gap: 20px; z-index: 10; pointer-events: none; }
+.hud-item { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: bold; text-shadow: 1px 1px 0 #000; color: #fff; }
 .hud-money { color: var(--money-green); }
-.hud-icon { width: 28px; height: 28px; background: #ffe5ec; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; border: 1px solid #ffb7d5; }
-#entrance-warning { color: #ff758f; font-size: 12px; animation: blink 1s infinite; margin-left: 5px; display: none; font-weight: bold; }
+.hud-icon { width: 24px; height: 24px; background: #688878; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid #111; }
+#entrance-warning { color: #ffaa44; font-size: 12px; animation: blink 1s infinite; margin-left: 10px; display: none; }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-/* BOTTOM TOOLBAR */
-#bottom-toolbar { position: absolute; bottom: 14px; right: 14px; display: flex; gap: 8px; z-index: 10; }
-.tool-btn { width: 52px; height: 52px; font-size: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; border-radius: 16px; }
-.tool-btn span { font-size: 11px; margin-top: 2px; }
-
-#quiz-trigger-btn { position: absolute; bottom: 14px; left: 14px; height: 52px; padding: 0 20px; font-size: 15px; font-weight: bold; z-index: 10; display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #a0c4ff, #bdb2ff); color: #2b1e3a; border-radius: 16px; border: 2px solid #fff; }
-#quiz-trigger-btn:hover { background: linear-gradient(135deg, #b5e2ff, #c7ceea); }
-
-#bgm-panel { position: absolute; top: 64px; left: 14px; z-index: 10; display: flex; gap: 8px; align-items: center; background: rgba(255, 255, 255, 0.88); padding: 8px 14px; border: 2px solid #e2c6ff; border-radius: 18px; box-shadow: 0 4px 15px rgba(226, 198, 255, 0.3); }
-
-/* BUILD WINDOW */
-#build-window { position: absolute; bottom: 74px; right: 14px; width: 360px; max-height: 440px; display: none; flex-direction: column; z-index: 15; overflow: hidden; }
-.window-titlebar { background: linear-gradient(135deg, #ffc6ff, #e2c6ff); padding: 10px 14px; font-size: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #4a3e56; }
-.close-btn { background: #ff758f; border: 1px solid #fff; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold; }
-.window-content { padding: 10px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; background: rgba(255, 255, 255, 0.95); max-height: 380px; }
-.build-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffe5ec; border: 2px solid #ffc6ff; border-radius: 14px; padding: 10px 6px; cursor: pointer; text-align: center; transition: all 0.2s; }
-.build-item:hover { background: #ffd6e7; transform: translateY(-2px); }
-.build-item.selected { background: #b5e2ff; border-color: #70a6ff; }
-.item-icon { font-size: 34px; margin-bottom: 4px; line-height: 1; }
-.item-name { font-size: 13px; color: #4a3e56; font-weight: bold; word-break: keep-all; }
-.item-cost { font-size: 12px; color: var(--money-green); font-weight: bold; margin-top: 2px; }
-.item-cost.premium { color: #ff9f1c; font-weight: bold; text-shadow: 0 0 4px rgba(255, 159, 28, 0.4); }
-.item-cost.ultra { color: #f72585; font-weight: bold; text-shadow: 0 0 6px rgba(247, 37, 133, 0.5); font-size: 13px; }
-
-/* MODAL OVERLAYS & PANELS */
-.modal-overlay { position: fixed; inset: 0; background: rgba(74, 62, 86, 0.5); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(6px); }
-.retro-modal-box { width: 90%; max-width: 520px; display: flex; flex-direction: column; border: 3px solid #ffb7d5; box-shadow: 0 15px 35px rgba(255, 183, 213, 0.4); border-radius: 24px; overflow: hidden; }
-
-/* QUIZ STYLING */
-.quiz-header-bar { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #ffc6ff, #e2c6ff); padding: 12px 16px; gap: 10px; flex-wrap: wrap; }
-.unit-select-dropdown { padding: 6px 12px; font-family: 'Paperozi', sans-serif; font-size: 13px; background: #fff; color: #4a3e56; border: 2px solid #ffb7d5; border-radius: 12px; cursor: pointer; outline: none; font-weight: bold; }
-.quiz-content { padding: 22px; background: #ffffff; color: #4a3e56; }
-.quiz-qno { font-size: 14px; font-weight: bold; color: #6b5b7b; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-.quiz-type-tag { font-size: 12px; padding: 4px 10px; border-radius: 12px; background: #a0c4ff; color: #2b1e3a; font-weight: bold; }
-.quiz-text { font-size: 19px; font-weight: bold; margin-bottom: 22px; line-height: 1.4; color: #332740; word-break: keep-all; }
-.quiz-options { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 15px; }
-.quiz-option { background: #f8f0fb; border: 2px solid #e2c6ff; border-radius: 14px; padding: 14px; font-size: 16px; cursor: pointer; font-family: inherit; color: #4a3e56; text-align: left; font-weight: bold; box-shadow: 0 3px 8px rgba(226, 198, 255, 0.2); }
-.quiz-option:hover { background: #ffe5ec; border-color: #ffb7d5; }
-
-.short-answer-container { display: flex; gap: 8px; margin-bottom: 15px; }
-.short-answer-input { flex: 1; padding: 14px; font-family: 'Paperozi', sans-serif; font-size: 16px; border: 2px solid #e2c6ff; border-radius: 14px; background: #fff; color: #4a3e56; font-weight: bold; }
-.short-answer-submit { padding: 0 22px; font-size: 16px; font-weight: bold; background: linear-gradient(135deg, #a0c4ff, #bdb2ff); color: #2b1e3a; border-radius: 14px; border: 2px solid #fff; cursor: pointer; }
-
-.quiz-feedback { margin-top: 15px; padding: 14px; background: #f0fff4; border: 2px solid #b9fbc0; border-radius: 14px; display: none; font-size: 14px; font-weight: bold; line-height: 1.5; color: #2d6a4f; }
-.quiz-action-buttons { display: none; gap: 10px; margin-top: 14px; }
-
-/* HINT MODAL */
-.hint-content { padding: 22px; background: #fffde7; color: #5c4d10; border: 3px solid #ffe082; border-radius: 20px; text-align: center; }
-.hint-title { font-size: 22px; font-weight: bold; color: #ff8f00; margin-bottom: 15px; }
+#bottom-toolbar { position: absolute; bottom: 10px; right: 10px; display: flex; gap: 5px; z-index: 10; }
+.tool-btn { width: 48px; height: 48px; font-size: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+.tool-btn span { font-size: 10px; margin-top: 2px; }
+#quiz-trigger-btn { position: absolute; bottom: 10px; left: 10px; height: 48px; padding: 0 20px; font-size: 16px; font-weight: bold; z-index: 10; display: flex; align-items: center; gap: 8px; background: #225588; }
+#quiz-trigger-btn:hover { background: #336699; }
+#bgm-panel { position: absolute; top: 45px; left: 10px; z-index: 10; display: flex; gap: 8px; align-items: center; background: rgba(32, 48, 40, 0.85); padding: 6px 12px; border: 2px solid var(--tycoon-border-dark); border-radius: 8px; }
+#build-window { position: absolute; bottom: 65px; right: 10px; width: 340px; max-height: 400px; display: none; flex-direction: column; z-index: 15; }
+.window-titlebar { background: #203028; padding: 4px 8px; font-size: 14px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+.close-btn { background: #882222; border: 1px solid #ffaaaa; border-right-color: #440000; border-bottom-color: #440000; width: 16px; height: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; }
+.window-content { padding: 8px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; background: var(--tycoon-bg); max-height: 350px;}
+.build-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #385045; border: 1px solid #203028; padding: 8px 4px; cursor: pointer; text-align: center; }
+.build-item:hover { background: #486055; border-color: #688878; }
+.build-item.selected { background: #225588; border-color: #6699cc; }
+.item-icon { font-size: 32px; margin-bottom: 4px; line-height: 1; }
+.item-name { font-size: 12px; color: #fff; text-shadow: 1px 1px 0 #000; word-break: keep-all; }
+.item-cost { font-size: 11px; color: var(--money-green); margin-top: 2px; }
+.item-cost.premium { color: #ffaa00; font-weight: bold; text-shadow: 0 0 2px #ff4400; } 
+.item-cost.ultra { color: #ff33ff; font-weight: bold; text-shadow: 0 0 3px #bb00bb; font-size: 12px; } 
+#quiz-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 50; }
+#quiz-modal { width: 90%; max-width: 500px; display: flex; flex-direction: column; }
+.quiz-content { padding: 20px; background: #c0c0c0; color: #000; border-left: 2px solid #fff; border-top: 2px solid #fff; border-right: 2px solid #444; border-bottom: 2px solid #444; }
+.quiz-qno { font-size: 14px; font-weight: bold; color: #555; margin-bottom: 10px; }
+.quiz-text { font-size: 18px; font-weight: bold; margin-bottom: 20px; line-height: 1.4; word-break: keep-all; }
+.quiz-options { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 15px; }
+.quiz-option { background: #e0e0e0; border-top: 2px solid #fff; border-left: 2px solid #fff; border-right: 2px solid #888; border-bottom: 2px solid #888; padding: 12px; font-size: 16px; cursor: pointer; font-family: inherit; color: #000; text-align: left; }
+.quiz-option:hover { background: #f0f0f0; }
+.quiz-option:active { border-top: 2px solid #888; border-left: 2px solid #888; border-right: 2px solid #fff; border-bottom: 2px solid #fff; padding-top: 14px; padding-left: 14px; }
+.quiz-feedback { margin-top: 15px; padding: 10px; background: #fff; border: 1px inset #888; display: none; font-size: 14px; font-weight: bold; line-height: 1.4;}
+.btn-next-quiz { margin-top: 10px; width: 100%; padding: 12px; font-weight: bold; display: none; }
+#hint-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 60; }
+#hint-modal { width: 90%; max-width: 400px; text-align: center; }
+.hint-content { padding: 20px; background: #fffae6; color: #000; border: 3px solid #ffcc00; border-radius: 8px; }
+.hint-title { font-size: 20px; font-weight: bold; color: #cc3300; margin-bottom: 15px; }
 .hint-text { font-size: 16px; margin-bottom: 20px; line-height: 1.5; word-break: keep-all; }
-.btn-close-hint { padding: 12px 24px; font-size: 16px; font-weight: bold; background: #ffe082; border: none; border-radius: 14px; cursor: pointer; color: #5c4d10; }
-
-/* START / AUTH MODALS */
-.intro-box { width: 480px; text-align: center; line-height: 1.5; max-width: 95%; border-radius: 28px; }
-.intro-title { font-size: 36px; color: #ff4d6d; margin-bottom: 5px; text-shadow: 2px 2px 0 #ffffff, 0 4px 10px rgba(255, 117, 143, 0.3); font-weight: 900; }
-.intro-sub-title { font-size: 16px; color: #70a6ff; font-weight: bold; margin-bottom: 15px; text-shadow: 1px 1px 0 #fff; }
-.start-btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
-.start-btn { font-size: 18px; padding: 16px; width: 100%; font-weight: bold; border-radius: 16px; }
-.auth-input-group { display: flex; flex-direction: column; gap: 12px; margin: 18px 0; }
-.auth-input { width: 100%; padding: 14px; font-family: 'Paperozi', sans-serif; font-size: 18px; text-align: center; border: 2px solid #ffc6ff; border-radius: 16px; background: #fff; color: #4a3e56; font-weight: bold; }
-.auth-input:focus { outline: none; border-color: #ff758f; box-shadow: 0 0 10px rgba(255, 117, 143, 0.3); }
-
-/* TEACHER DASHBOARD & HALL OF FAME */
-.teacher-box { width: 95%; max-width: 750px; max-height: 90vh; display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; }
-.teacher-content { padding: 18px; background: #fff5f8; overflow-y: auto; color: #4a3e56; display: flex; flex-direction: column; gap: 15px; }
-.teacher-card { background: #ffffff; border: 2px solid #ffc6ff; padding: 16px; border-radius: 16px; box-shadow: 0 4px 12px rgba(255, 198, 255, 0.2); }
-.teacher-card-title { font-size: 16px; font-weight: bold; color: #ff4d6d; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-.file-upload-area { border: 2px dashed #ffb7d5; padding: 22px; text-align: center; border-radius: 16px; cursor: pointer; background: #fff0f5; }
-.file-upload-area:hover { border-color: #ff4d6d; background: #ffe5ec; }
-.questions-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; background: #fff; border-radius: 12px; overflow: hidden; }
-.questions-table th, .questions-table td { border: 1px solid #f2c6de; padding: 10px; text-align: center; }
-.questions-table th { background: #ffe5ec; color: #ff4d6d; font-weight: bold; }
-
-.rank-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 12px; }
-.rank-1 { background: #ffd700; color: #5c4d10; }
-.rank-2 { background: #e0e0e0; color: #333; }
-.rank-3 { background: #ffaa66; color: #fff; }
-.rank-other { background: #e2c6ff; color: #4a3e56; }
-
-/* OUTRO MODAL */
-.outro-box { width: 550px; max-width: 95%; background: linear-gradient(135deg, #ffffff, #ffe5ec); border: 4px solid #ffb7d5; box-shadow: 0 10px 40px rgba(255, 183, 213, 0.5); border-radius: 24px; text-align: center; }
-.outro-title-fx { font-size: 32px; color: #ff4d6d; text-shadow: 2px 2px 0 #fff; margin-bottom: 10px; }
-.outro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
-.outro-card { background: rgba(255,255,255,0.9); padding: 14px; border-radius: 16px; border: 2px solid #ffc6ff; display: flex; flex-direction: column; align-items: center; }
-.outro-card-title { font-size: 12px; color: #78688b; margin-bottom: 4px; font-weight: bold; }
-.outro-card-value { font-size: 20px; font-weight: bold; color: #4a3e56; }
-
+.btn-close-hint { padding: 10px 20px; font-size: 16px; font-weight: bold; background: #ffcc00; border: 2px solid #cc9900; border-radius: 4px; cursor: pointer; }
+.btn-close-hint:hover { background: #ffdb4d; }
+#intro-modal { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 100; }
+.intro-box { width: 450px; text-align: center; line-height: 1.5; }
+.intro-title { font-size: 36px; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 0 #000; }
+.intro-sub-title { font-size: 18px; color: #ffdd44; font-weight: bold; margin-bottom: 20px; text-shadow: 1px 1px 0 #000; }
+.intro-sub { font-size: 14px; color: #ffaa44; margin-bottom: 20px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;}
+.intro-btn { font-size: 20px; padding: 15px 30px; width: 100%; }
+.low-spec-label { color: #fff; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 15px; background: #444; padding: 8px 12px; border-radius: 6px; }
+#nickname-modal { position: fixed; inset: 0; background: #000; display: none; align-items: center; justify-content: center; z-index: 100; }
+.nickname-input { width: 100%; padding: 15px; font-family: 'Galmuri9', sans-serif; font-size: 20px; margin-bottom: 20px; text-align: center; border: 2px solid var(--tycoon-border-dark); background: #eee; color: #111; user-select: text; -webkit-user-select: text; }
+.nickname-input:focus { outline: none; border-color: var(--money-green); background: #fff; }
+#outro-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 200; }
+.outro-box { width: 550px; background: linear-gradient(135deg, #1a2a22, #2b4a3a); border: 4px solid #facc15; box-shadow: 0 0 30px rgba(250, 204, 21, 0.3); border-radius: 15px; text-align: center; }
+.outro-title-fx { font-size: 32px; color: #fff; text-shadow: 0 0 10px #facc15, 0 0 20px #facc15, 2px 2px 0 #cc5500; margin-bottom: 10px; animation: pulse 2s infinite; }
+.outro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+.outro-card { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid #688878; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.outro-card-title { font-size: 13px; color: #cccccc; margin-bottom: 5px; }
+.outro-card-value { font-size: 22px; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 @media (max-width: 600px) {
-    #build-window { width: 95%; right: 2.5%; bottom: 74px; max-height: 50vh; }
-    .hud-item { font-size: 13px; }
+    #build-window { width: 95%; right: 2.5%; bottom: 65px; max-height: 50vh; }
+    .hud-item { font-size: 14px; }
     .quiz-text { font-size: 16px; }
-    .tool-btn { width: 44px; height: 44px; font-size: 18px; }
-    .intro-title, .outro-title-fx { font-size: 26px; }
-    .intro-sub-title { font-size: 14px; }
-    .outro-grid { grid-template-columns: 1fr; gap: 8px; }
-    .outro-card-value { font-size: 16px; }
+    .tool-btn { width: 42px; height: 42px; font-size: 16px; }
+    .intro-title, .outro-title-fx { font-size: 24px; }
+    .intro-sub-title { font-size: 15px; }
+    .outro-grid { grid-template-columns: 1fr; gap: 10px; }
+    .outro-card-value { font-size: 18px; }
+    .outro-box { width: 90%; }
 }
-#build-cursor-tip { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); color: #ff4d6d; padding: 10px 20px; border-radius: 20px; font-size: 14px; pointer-events: none; display: none; z-index: 10; text-align: center; border: 2px solid #ffb7d5; box-shadow: 0 4px 15px rgba(255, 183, 213, 0.4); font-weight: bold; }
-#toast-notification { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #ff4d6d; border: 2px solid #ffb7d5; padding: 12px 24px; border-radius: 20px; font-weight: bold; font-size: 15px; z-index: 300; display: none; box-shadow: 0 6px 20px rgba(255, 183, 213, 0.4); }
+#build-cursor-tip { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #ffcc00; padding: 8px 15px; border-radius: 15px; font-size: 14px; pointer-events: none; display: none; z-index: 10; text-align: center; }
 </style>
 </head>
 <body>
-
-<div id="toast-notification">메시지</div>
-
-<!-- 1. START / MAIN MODAL -->
-<div id="main-menu-modal" class="modal-overlay" style="display: flex;">
+<div id="intro-modal">
     <div class="retro-panel intro-box" style="padding: 30px; margin: 15px;">
-        <h1 class="intro-title">🦄 양배추 수학<br>코스터 타이쿤 🦄</h1>
-        <div class="intro-sub-title">[ ✨ 파스텔 롤러코스터 수학 퀴즈 탐험대 ✨ ]</div>
-
-        <p style="font-size: 14px; color: #ff4d6d; background: #fff0f5; border: 2px solid #ffc6ff; padding: 14px; border-radius: 18px; margin-bottom: 18px; line-height: 1.5; font-weight: bold;">
-            💡 <b>게임 안내</b><br>
-            수학 문제를 풀어 연구기금을 모으고 동화 같은 꿈의 놀이공원을 만드세요!
+        <h1 class="intro-title">수학 코스터<br>타이쿤</h1>
+        <div class="intro-sub-title">[ 3학년 1학기 5단원 길이와 시간 ]</div>
+        <p class="intro-sub">
+            💡 <b>게임 목표</b><br>문제를 풀어 자금을 모으고 세계 최고의 놀이공원을 만드세요!<br><br>
+            ⚠️ <b>주의사항</b><br>- 반드시 <b>[시설]</b>에서 <b>'공원 입구'</b>를 모서리에 먼저 지으세요.<br>- 입구와 기구들을 <b>'보도(길)'</b>로 꼭 연결해야 합니다.<br>
+            <span style="color: #ffcc00; font-weight: bold; font-size: 15px; display: inline-block; margin-top: 5px;">🔥 놀이기구를 많이 건설할수록<br>최대 1,000명의 손님이 구름처럼 몰려옵니다! 🔥</span>
         </p>
-
-        <label style="color: #4a3e56; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 18px; background: #fff; padding: 8px 14px; border-radius: 12px; border: 1px solid #ffc6ff; font-weight: bold;">
-            <input type="checkbox" id="low-spec-toggle" style="width: 16px; height: 16px;">
-            <span>저사양 모드 켜기 (학교 구형 PC용)</span>
-        </label>
-        <div class="start-btn-group">
-            <button class="retro-button start-btn" style="background: linear-gradient(135deg, #b9fbc0, #74c69d); color: #1b4332;" onclick="openAuthModal('new')">🎮 새로 시작하기</button>
-            <button class="retro-button start-btn" style="background: linear-gradient(135deg, #a0c4ff, #b5e2ff); color: #1b263b;" onclick="openAuthModal('load')">📂 이어하기 (저장된 게임)</button>
-            <button class="retro-button start-btn" style="background: linear-gradient(135deg, #ffc6ff, #f72585); color: #ffffff;" onclick="openHallOfFame()">🏆 명예의 전당 (순위 보기)</button>
-            <button class="retro-button start-btn" style="background: linear-gradient(135deg, #ffd6e7, #ff8fab); color: #4a1525;" onclick="promptTeacherAuth()">👩‍🏫 교사 대시보드 (문제 관리)</button>
-        </div>
+        <label class="low-spec-label"><input type="checkbox" id="low-spec-toggle" style="width: 18px; height: 18px;"> <span>저사양 모드 켜기 (학교 구형 PC용)</span></label>
+        <button class="retro-button intro-btn" onclick="showNicknameInput()">다음으로</button>
     </div>
 </div>
-
-<!-- 2. AUTH / SAVE SELECTION MODAL -->
-<div id="auth-modal" class="modal-overlay">
+<div id="nickname-modal">
     <div class="retro-panel intro-box" style="padding: 30px; margin: 15px;">
-        <h1 class="intro-title" id="auth-title">로그인</h1>
-        <p class="intro-sub-title" id="auth-subtitle">닉네임과 비밀번호를 입력해주세요.</p>
-        
-        <div class="auth-input-group">
-            <input type="text" id="input-nickname" class="auth-input" placeholder="닉네임 (예: 수학대장)" maxlength="12">
-            <input type="password" id="input-password" class="auth-input" placeholder="비밀번호 (4자리 이상)" maxlength="20">
-        </div>
-        
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button class="retro-button start-btn" style="flex: 1; background: linear-gradient(135deg, #b9fbc0, #74c69d); color: #1b4332;" id="btn-auth-confirm" onclick="submitAuth()">확인 및 시작</button>
-            <button class="retro-button start-btn" style="flex: 1; background: #e0e0e0; color: #666;" onclick="closeAuthModal()">취소</button>
-        </div>
+        <h1 class="intro-title">경영자 등록</h1>
+        <p class="intro-sub">놀이공원을 경영할 원장님의 이름을 알려주세요.</p>
+        <input type="text" id="player-nickname" class="nickname-input" placeholder="이름 입력 (예: 수학대장)" maxlength="10">
+        <button class="retro-button intro-btn" onclick="submitNickname()">공원 개장하기</button>
     </div>
 </div>
-
-<!-- HALL OF FAME MODAL -->
-<div id="fame-modal" class="modal-overlay">
-    <div class="retro-panel teacher-box">
-        <div class="window-titlebar">
-            <span>🏆 명예의 전당 (최고 경영자 순위)</span>
-            <div class="close-btn" onclick="closeHallOfFame()">X</div>
-        </div>
-        <div class="teacher-content">
-            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 5px;">
-                <button class="retro-button" id="rank-tab-money" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #ffc6ff, #f72585); color: #fff; font-weight: bold;" onclick="switchRankTab('money')">💰 보유 자금 순위</button>
-                <button class="retro-button" id="rank-tab-rating" style="flex: 1; padding: 12px; background: #e0e0e0; color: #4a3e56; font-weight: bold;" onclick="switchRankTab('rating')">⭐ 놀이공원 가치(레벨) 순위</button>
-            </div>
-            
-            <div id="hall-of-fame-list" style="max-height: 350px; overflow-y: auto;"></div>
-            
-            <button class="retro-button" style="padding: 12px; background: #e0e0e0; color: #4a3e56; width: 100%; font-weight: bold;" onclick="closeHallOfFame()">닫기</button>
-        </div>
-    </div>
-</div>
-
-<!-- TEACHER AUTH MODAL -->
-<div id="teacher-auth-modal" class="modal-overlay">
-    <div class="retro-panel intro-box" style="padding: 30px; margin: 15px;">
-        <h1 class="intro-title">👩‍🏫 교사 인증</h1>
-        <p class="intro-sub-title">교사 대시보드 접근을 위해 비밀번호를 입력하세요.</p>
-        
-        <div class="auth-input-group">
-            <input type="password" id="teacher-password-input" class="auth-input" placeholder="교사 비밀번호 입력" maxlength="20">
-        </div>
-        
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button class="retro-button start-btn" style="flex: 1; background: linear-gradient(135deg, #ffd6e7, #ff8fab); color: #4a1525;" onclick="verifyTeacherPassword()">인증 및 입장</button>
-            <button class="retro-button start-btn" style="flex: 1; background: #e0e0e0; color: #666;" onclick="closeTeacherAuthModal()">취소</button>
-        </div>
-    </div>
-</div>
-
-<!-- 3. TEACHER DASHBOARD MODAL -->
-<div id="teacher-modal" class="modal-overlay">
-    <div class="retro-panel teacher-box">
-        <div class="window-titlebar">
-            <span>👩‍🏫 교사 대시보드 (수학 문제 및 단원 관리)</span>
-            <div class="close-btn" onclick="closeTeacherDashboard()">X</div>
-        </div>
-        <div class="teacher-content">
-            <div class="teacher-card">
-                <div class="teacher-card-title">📥 1. 문제 작성용 CSV 기본 포맷 양식 다운로드</div>
-                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
-                    엑셀(Excel)이나 한글에서 수정 가능한 CSV 양식을 다운로드합니다. 단원명, 유형(객관식/주관식), 문제, 선택지, 정답, 해설, 힌트를 입력할 수 있습니다.
-                </p>
-                <button class="retro-button" style="padding: 10px 18px; background: linear-gradient(135deg, #a0c4ff, #b5e2ff); color: #1b263b; font-size: 13px; font-weight: bold;" onclick="downloadSampleCSV()">
-                    📄 기본 CSV 양식 다운로드 (.csv)
-                </button>
-            </div>
-
-            <div class="teacher-card">
-                <div class="teacher-card-title">📤 2. CSV 파일 업로드 (DB 저장)</div>
-                <div class="file-upload-area" onclick="document.getElementById('csv-file-input').click()">
-                    <span style="font-size: 28px;">📁</span><br>
-                    <span style="font-size: 14px; font-weight: bold; color: #ff4d6d;">클릭하여 작성한 CSV 파일 선택</span><br>
-                    <span style="font-size: 12px; color: #888;">(객관식 선택지는 세미콜론 ';' 으로 구분)</span>
-                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
-                </div>
-            </div>
-
-            <div class="teacher-card">
-                <div class="teacher-card-title" style="justify-content: space-between;">
-                    <span>📚 3. 현재 등록된 문제 목록</span>
-                    <button class="retro-button" style="padding: 6px 12px; background: #ff758f; color: #fff; font-size: 12px;" onclick="resetDefaultQuestions()">
-                        🔄 기본 문제로 초기화
-                    </button>
-                </div>
-                <div id="questions-summary-list" style="max-height: 200px; overflow-y: auto;"></div>
-            </div>
-            
-            <button class="retro-button" style="padding: 12px; background: #e0e0e0; color: #4a3e56; width: 100%; font-weight: bold;" onclick="closeTeacherDashboard()">닫기</button>
-        </div>
-    </div>
-</div>
-
-<!-- 4. QUIZ MODAL WITH UNIT SELECTION -->
-<div id="quiz-modal-overlay" class="modal-overlay">
-    <div id="quiz-modal" class="retro-panel retro-modal-box">
-        <div class="quiz-header-bar">
-            <span style="font-weight: bold; font-size: 15px; color: #4a3e56;">📝 연구 과제 (문제 풀기)</span>
-            <select id="quiz-unit-select" class="unit-select-dropdown" onchange="onUnitChange()"></select>
-        </div>
-        <div class="quiz-content">
-            <div class="quiz-qno">
-                <span id="quiz-no">문제 1 / 10</span>
-                <span id="quiz-type-tag" class="quiz-type-tag">객관식</span>
-            </div>
-            <div class="quiz-text" id="quiz-text">문제 내용이 여기에 표시됩니다.</div>
-            
-            <!-- Choice Options -->
-            <div class="quiz-options" id="quiz-options"></div>
-            
-            <!-- Short Answer Input -->
-            <div class="short-answer-container" id="short-answer-box" style="display: none;">
-                <input type="text" id="short-answer-input" class="short-answer-input" placeholder="정답을 입력하세요 (예: 53mm 또는 53)">
-                <button class="short-answer-submit" onclick="submitShortAnswer()">제출</button>
-            </div>
-
-            <div class="quiz-feedback" id="quiz-feedback"></div>
-            <div class="quiz-action-buttons" id="quiz-action-buttons">
-                <button class="retro-button" style="padding: 12px; background: linear-gradient(135deg, #b9fbc0, #74c69d); color: #1b4332; font-weight: bold; flex: 1;" onclick="nextQuiz()">🔄 계속 풀기 (다음 문제)</button>
-                <button class="retro-button" style="padding: 12px; background: #e0e0e0; color: #4a3e56; font-weight: bold; flex: 1;" onclick="closeQuizModal()">❌ 그만 풀기 (공원으로)</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- HINT MODAL -->
-<div id="hint-modal-overlay" class="modal-overlay" style="z-index: 150;">
-    <div id="hint-modal" style="width: 90%; max-width: 400px;">
-        <div class="hint-content">
-            <div class="hint-title">💡 힌트</div>
-            <div class="hint-text" id="hint-text">힌트 내용</div>
-            <button class="btn-close-hint" onclick="closeHintModal()">다시 풀어보기</button>
-        </div>
-    </div>
-</div>
-
-<!-- OUTRO MODAL -->
-<div id="outro-modal" class="modal-overlay" style="z-index: 200;">
+<div id="outro-modal">
     <div class="retro-panel outro-box" style="padding: 30px; margin: 15px;">
         <h1 class="outro-title-fx">🎉 위대한 경영자 등극! 🎉</h1>
-        <p style="font-size: 14px; line-height: 1.4; color: #4a3e56; margin-bottom: 12px; font-weight: bold;">
-            선택한 단원의 모든 수학 문제를 완벽하게 풀었습니다!<br>성공적인 공원 경영을 축하합니다.
-        </p>
+        <p class="intro-sub" style="font-size: 14px; line-height: 1.4;">길이와 시간 단원의 모든 수학 문제(보너스 포함)를 완벽하게 풀었습니다!<br>성공적인 공원 경영을 축하합니다.</p>
         <div class="outro-grid">
-            <div class="outro-card"><div class="outro-card-title">👑 최고 경영자</div><div class="outro-card-value" id="outro-name" style="color: #ff4d6d;">원장님</div></div>
-            <div class="outro-card"><div class="outro-card-title">⏱️ 플레이 시간</div><div class="outro-card-value" id="outro-time" style="color: #70a6ff;">0분 0초</div></div>
-            <div class="outro-card"><div class="outro-card-title">💯 연구 정답률</div><div class="outro-card-value" id="outro-score" style="color: #38b000;">100%</div></div>
-            <div class="outro-card"><div class="outro-card-title">🎯 단번에 맞춘 문제</div><div class="outro-card-value" id="outro-first-try" style="color: #9d4edd;">0 개</div></div>
-            <div class="outro-card"><div class="outro-card-title">🚶 현재 유치한 손님 수</div><div class="outro-card-value" id="outro-guests" style="color: #ff85a1;">0 명</div></div>
+            <div class="outro-card"><div class="outro-card-title">👑 최고 경영자</div><div class="outro-card-value" id="outro-name" style="color: #ffffff;">원장님</div></div>
+            <div class="outro-card"><div class="outro-card-title">⏱️ 플레이 시간</div><div class="outro-card-value" id="outro-time" style="color: #ffffff;">0분 0초</div></div>
+            <div class="outro-card"><div class="outro-card-title">💯 연구 정답률</div><div class="outro-card-value" style="color: #44aaff;">30 / 30 문제</div></div>
+            <div class="outro-card"><div class="outro-card-title">🎯 단번에 맞춘 문제</div><div class="outro-card-value" id="outro-first-try" style="color: #ff88ff;">0 개</div></div>
+            <div class="outro-card"><div class="outro-card-title">🚶 현재 유치한 손님 수</div><div class="outro-card-value" id="outro-guests" style="color: #ffaa44;">0 명</div></div>
             <div class="outro-card"><div class="outro-card-title">💰 최종 확보 자금</div><div class="outro-card-value" id="outro-money" style="color: var(--money-green);">₩ 0</div></div>
         </div>
-        <button class="retro-button start-btn" onclick="continueGame()" style="background: linear-gradient(135deg, #a0c4ff, #b5e2ff); color: #1b263b;">계속해서 공원 꾸미기</button>
+        <button class="retro-button intro-btn" onclick="continueGame()" style="background: #225588; border-color: #6699cc;">계속해서 공원 꾸미기</button>
     </div>
 </div>
-
-<!-- GAME CANVAS & HUD -->
 <div id="game-container"><canvas id="gameCanvas"></canvas></div>
 <div id="top-hud">
     <div class="hud-item" title="방문객 수"><div class="hud-icon">🚶</div><span id="guest-count">0</span>명<span id="entrance-warning">⚠️ 입구를 건설하세요!</span></div>
     <div class="hud-item" title="자금"><div class="hud-icon">💰</div><span id="money-count" class="hud-money">₩ 5,000</span></div>
-    <div class="hud-item" title="공원 가치"><div class="hud-icon">⭐</div><span id="rating-count">0</span></div>
-    <button class="retro-button" style="margin-left: auto; padding: 6px 14px; font-size: 13px; background: linear-gradient(135deg, #b9fbc0, #74c69d); color: #1b4332;" onclick="manualSaveGame()">💾 저장하기</button>
+    <div class="hud-item" title="공원 가치" style="margin-left: auto;"><div class="hud-icon">⭐</div><span id="rating-count">0</span></div>
 </div>
-
 <div id="bgm-panel">
-    <button class="retro-button" id="bgm-play-btn" onclick="toggleBGM()" style="padding:6px 12px; font-size:12px;">🎵 BGM 재생</button>
-    <button class="retro-button" onclick="nextBGM()" style="padding:6px 12px; font-size:12px;">⏭ 다음 곡</button>
-    <span id="bgm-track-info" style="color:#ff4d6d; font-size:12px; font-weight:bold;">Track 1/5</span>
+    <button class="retro-button" id="bgm-play-btn" onclick="toggleBGM()" style="padding:4px 8px; font-size:12px;">🎵 BGM 재생</button>
+    <button class="retro-button" onclick="nextBGM()" style="padding:4px 8px; font-size:12px;">⏭ 다음 곡</button>
+    <span id="bgm-track-info" style="color:#ffcc00; font-size:12px; text-shadow:1px 1px 0 #000; font-weight:bold;">Track 1/5</span>
     <audio id="bgm-audio" loop crossorigin="anonymous"></audio>
 </div>
-
 <div id="build-cursor-tip">건설할 위치를 클릭하세요<br>(취소: 빈 곳 우클릭 또는 도구모음 재클릭)</div>
 <button id="quiz-trigger-btn" class="retro-button" onclick="openQuiz()">📝 연구기금 (문제풀기)</button>
-
 <div id="bottom-toolbar">
     <button class="retro-button tool-btn" onclick="toggleBuildWindow('facility')" title="시설 (입구 등)">🏢<span>시설</span></button>
     <button class="retro-button tool-btn" onclick="toggleBuildWindow('path')" title="보도">🛤️<span>보도</span></button>
@@ -427,986 +149,83 @@ canvas { display: block; width: 100%; height: 100%; }
     <button class="retro-button tool-btn" onclick="toggleBuildWindow('scenery')" title="조경">🌳<span>조경</span></button>
     <button class="retro-button tool-btn" id="btn-demolish" onclick="toggleDemolishMode()" title="철거">🧨<span>철거</span></button>
 </div>
-
 <div id="build-window" class="retro-panel">
     <div class="window-titlebar"><span id="build-window-title">건설 메뉴</span><div class="close-btn" onclick="closeBuildWindow()">X</div></div>
     <div class="window-content" id="build-catalog"></div>
 </div>
-
+<div id="quiz-modal-overlay">
+    <div id="quiz-modal" class="retro-panel">
+        <div class="window-titlebar"><span>연구 과제 (길이와 시간)</span></div>
+        <div class="quiz-content">
+            <div class="quiz-qno" id="quiz-no">문제 1 / 30</div>
+            <div class="quiz-text" id="quiz-text">문제 텍스트</div>
+            <div class="quiz-options" id="quiz-options"></div>
+            <div class="quiz-feedback" id="quiz-feedback">피드백</div>
+            <button class="retro-button btn-next-quiz" id="btn-next-quiz" onclick="nextQuiz()">자금 수령 및 닫기</button>
+        </div>
+    </div>
+</div>
+<div id="hint-modal-overlay">
+    <div id="hint-modal">
+        <div class="hint-content">
+            <div class="hint-title">💡 힌트</div>
+            <div class="hint-text" id="hint-text">힌트 내용</div>
+            <button class="btn-close-hint" onclick="closeHintModal()">다시 풀어보기</button>
+        </div>
+    </div>
+</div>
 <script>
-/* ==========================================================================
-   GLOBAL ENGINE CONSTANTS & INITIALIZED STATE VARIABLES
-   ========================================================================== */
-const TILE_W = 64, TILE_H = 32, GRID_SIZE = 30;
-
-let camX = 0, camY = 0, money = 5000, incomePerTick = 0, rating = 0;
-let currentBuildItem = null, parkEntranceBuilt = false, entrancePos = null, playerName = ""; 
-let gridMap = [], entities = [], floatingTexts = [], explosions = [], guestsList = [];
+const MATH_QUESTIONS = [
+    { q: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이를 무엇이라고 하나요?", options: ["1 mm", "1 m", "1 km", "10 mm"], answer: 0, explanation: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이는 1mm(밀리미터)입니다.", hint: "cm 다음으로 작은 단위를 생각해보세요. 자에 있는 가장 작은 눈금 하나에요." },
+    { q: "5cm 3mm는 몇 mm일까요?", options: ["53 mm", "35 mm", "503 mm", "8 mm"], answer: 0, explanation: "1cm는 10mm입니다. 5cm는 50mm이므로, 50mm + 3mm = 53mm입니다.", hint: "1cm가 몇 mm인지 기억나나요? 1cm = 10mm랍니다." },
+    { q: "1000m를 하나로 묶어서 나타내는 단위는 무엇일까요?", options: ["1 km", "10 km", "100 cm", "10 mm"], answer: 0, explanation: "1000m는 1km(킬로미터)라고 씁니다.", hint: "아주 먼 거리를 나타낼 때 쓰는 단위에요. 기차나 자동차로 이동할 때 써요." },
+    { q: "2km 400m는 몇 m일까요?", options: ["2400 m", "2040 m", "240 m", "4200 m"], answer: 0, explanation: "1km는 1000m입니다. 2km는 2000m이므로, 합치면 2400m입니다.", hint: "1km를 m로 먼저 바꿔보세요. (1km = 1000m)" },
+    { q: "3500m는 몇 km 몇 m일까요?", options: ["3km 500m", "35km", "3km 50m", "5km 300m"], answer: 0, explanation: "3000m는 3km이므로, 3500m는 3km 500m입니다.", hint: "1000m마다 1km로 바꿀 수 있어요. 3000m는 몇 km일까요?" },
+    { q: "시계의 초침이 한 바퀴를 도는 시간인 '1분'은 몇 초일까요?", options: ["60초", "100초", "10초", "24초"], answer: 0, explanation: "초침이 시계를 한 바퀴 도는 데 걸리는 시간은 60초이며, 이는 1분과 같습니다.", hint: "작고 얇은 바늘(초침)이 한 바퀴를 빙 돌면 몇 번을 똑딱거릴까요?" },
+    { q: "80초는 몇 분 몇 초일까요?", options: ["1분 20초", "1분 0초", "2분 20초", "8분"], answer: 0, explanation: "80초에서 60초(1분)를 빼면 20초가 남으므로, 1분 20초입니다.", hint: "1분은 60초에요. 80초에서 60초를 빼면 몇 초가 남나요?" },
+    { q: "1분 30초는 모두 몇 초일까요?", options: ["90초", "130초", "40초", "100초"], answer: 0, explanation: "1분은 60초입니다. 60초 + 30초 = 90초입니다.", hint: "먼저 1분을 초로 바꿔보세요. (1분 = 60초)" },
+    { q: "시간의 덧셈을 해봅시다. 2시간 10분 + 1시간 20분은?", options: ["3시간 30분", "3시간 10분", "4시간 30분", "2시간 30분"], answer: 0, explanation: "시간은 시간끼리, 분은 분끼리 더합니다. 2+1=3시간, 10+20=30분입니다.", hint: "시간 단위와 분 단위를 각각 따로따로 더해주면 됩니다." },
+    { q: "받아올림이 있는 덧셈입니다. 30분 40초 + 10분 30초는 얼마일까요?", options: ["41분 10초", "40분 70초", "41분 30초", "40분 10초"], answer: 0, explanation: "초를 더하면 70초입니다. 70초는 1분 10초이므로, 분에 1분을 올려주어 40+1=41분, 남은 10초가 됩니다.", hint: "초끼리 더해서 60초가 넘어가면 1분으로 받아올림 해야 해요." },
+    { q: "시간의 뺄셈을 해봅시다. 4시간 50분 - 2시간 10분은?", options: ["2시간 40분", "2시간 30분", "3시간 40분", "6시간 40분"], answer: 0, explanation: "시간은 시간끼리, 분은 분끼리 뺍니다. 4-2=2시간, 50-10=40분.", hint: "덧셈과 마찬가지로 시간, 분을 각각 따로 빼주면 돼요." },
+    { q: "받아내림이 있는 뺄셈입니다. 4분 10초 - 1분 30초는?", options: ["2분 40초", "3분 40초", "2분 20초", "3분 20초"], answer: 0, explanation: "10초에서 30초를 뺄 수 없으므로 1분(60초)을 받아내립니다. (3분+70초) - 1분 30초 = 2분 40초.", hint: "10초에서 30초를 뺄 수 없죠? 분에서 1분(60초)을 빌려와야 해요." },
+    { q: "오전 9시에 출발해서 오전 11시 30분에 도착했습니다. 걸린 시간은 얼마인가요?", options: ["2시간 30분", "1시간 30분", "3시간 30분", "2시간"], answer: 0, explanation: "도착 시각 11시 30분에서 출발 시각 9시를 빼면 2시간 30분입니다.", hint: "도착한 시간에서 출발한 시간을 빼보면 걸린 시간을 알 수 있어요." },
+    { q: "길이의 덧셈을 해봅시다. 2km 500m + 1km 600m는?", options: ["4km 100m", "3km 1100m", "3km 100m", "4km 200m"], answer: 0, explanation: "m끼리 더하면 1100m입니다. 1000m는 1km로 올려주므로 2+1+1=4km, 남은 100m가 됩니다.", hint: "m끼리 더해서 1000m가 넘으면 1km로 받아올림 해보세요." },
+    { q: "길이의 뺄셈입니다. 3km 200m - 1km 500m는?", options: ["1km 700m", "2km 700m", "1km 300m", "2km 300m"], answer: 0, explanation: "200m에서 500m를 뺄 수 없으므로 1km(1000m)를 받아내립니다. (2km+1200m) - 1km 500m = 1km 700m.", hint: "200m에서 500m를 뺄 수 없으니, km에서 1km(1000m)를 빌려오세요." },
+    { q: "연필의 길이를 잴 때 가장 알맞은 단위는 무엇일까요?", options: ["cm 또는 mm", "km", "kg", "시간"], answer: 0, explanation: "연필처럼 작은 물건의 길이는 cm(센티미터)나 mm(밀리미터)로 재는 것이 적절합니다.", hint: "필통에 들어가는 물건을 잴 때 자에서 흔히 보는 단위에요." },
+    { q: "서울에서 부산까지의 거리를 나타낼 때 가장 알맞은 단위는?", options: ["km", "mm", "cm", "m"], answer: 0, explanation: "지역 간의 아주 먼 거리는 km(킬로미터)로 나타냅니다.", hint: "자동차를 타고 고속도로를 달릴 때 표지판에 적혀있는 단위에요." },
+    { q: "150mm는 몇 cm일까요?", options: ["15 cm", "1.5 cm", "1500 cm", "1 cm 5 mm"], answer: 0, explanation: "10mm가 1cm이므로, 150mm는 10으로 나누어 15cm가 됩니다.", hint: "10mm가 모이면 1cm가 돼요. 150을 10으로 나누어보세요." },
+    { q: "오후 2시 40분에서 30분 뒤의 시각은 언제일까요?", options: ["오후 3시 10분", "오후 2시 70분", "오후 3시 20분", "오후 3시 00분"], answer: 0, explanation: "40분 + 30분 = 70분입니다. 70분은 1시간 10분이므로, 2시에 1시간을 더해 3시 10분이 됩니다.", hint: "40분에 30분을 먼저 더해보세요. 60분이 넘어가면 1시간으로 바꿔야 해요." },
+    { q: "1시간 10분을 분으로만 나타내면 몇 분일까요?", options: ["70분", "110분", "60분", "80분"], answer: 0, explanation: "1시간은 60분이므로, 60분 + 10분 = 70분입니다.", hint: "1시간을 분으로 바꾸면 몇 분인지 기억나나요? 거기에 10분을 더해보세요." },
+    { q: "1km는 몇 m일까요?", options: ["1000m", "100m", "10m", "10000m"], answer: 0, explanation: "1km는 1000m와 같습니다.", hint: "k(킬로)가 붙으면 보통 1000배를 의미해요." },
+    { q: "45mm는 몇 cm 몇 mm일까요?", options: ["4cm 5mm", "5cm 4mm", "45cm", "4m 5cm"], answer: 0, explanation: "10mm는 1cm입니다. 45mm는 40mm + 5mm이므로 4cm 5mm입니다.", hint: "10mm가 1cm라는 것을 생각해서 45를 나누어보세요." },
+    { q: "1분 15초는 모두 몇 초일까요?", options: ["75초", "115초", "65초", "85초"], answer: 0, explanation: "1분은 60초입니다. 60초 + 15초 = 75초입니다.", hint: "먼저 1분을 초로 변환한 다음 15초를 더하세요." },
+    { q: "100초는 몇 분 몇 초일까요?", options: ["1분 40초", "1분 0초", "1분 10초", "2분 40초"], answer: 0, explanation: "100초에서 60초(1분)를 빼면 40초가 남습니다. 따라서 1분 40초입니다.", hint: "100초 안에 60초가 한 번 들어가요. 남는 초는 얼마일까요?" },
+    { q: "길이의 덧셈입니다. 3km 200m + 1km 300m는 얼마일까요?", options: ["4km 500m", "4km 100m", "2km 500m", "5km 500m"], answer: 0, explanation: "km는 km끼리, m는 m끼리 더합니다. 3+1=4km, 200+300=500m입니다.", hint: "단위가 같은 숫자끼리 더해주면 아주 쉬워요." },
+    { q: "시간의 덧셈입니다. 2시간 10분 + 45분은 얼마일까요?", options: ["2시간 55분", "3시간 5분", "2시간 45분", "3시간 55분"], answer: 0, explanation: "분 단위인 10분과 45분을 더하면 55분이 됩니다. 시간은 그대로 2시간입니다.", hint: "분끼리 더했을 때 60분이 넘지 않으면 그대로 적어주면 돼요." },
+    { q: "시간의 뺄셈입니다. 1시간 30분 - 40분은 얼마일까요?", options: ["50분", "1시간 10분", "10분", "1시간 50분"], answer: 0, explanation: "30분에서 40분을 뺄 수 없으므로 1시간을 60분으로 받아내립니다. (90분) - 40분 = 50분입니다.", hint: "30에서 40을 뺄 수 없죠? 1시간을 60분으로 풀어서 빌려오세요." },
+    { q: "길이의 덧셈입니다. 2cm 8mm + 3cm 1mm는 얼마일까요?", options: ["5cm 9mm", "6cm 1mm", "5cm 1mm", "6cm 9mm"], answer: 0, explanation: "cm는 cm끼리, mm는 mm끼리 더합니다. 2+3=5cm, 8+1=9mm입니다.", hint: "같은 단위끼리 더해주세요. mm의 합이 10을 넘지 않네요!" },
+    { q: "오후 1시에서 2시간 전의 시각은 언제일까요?", options: ["오전 11시", "오후 3시", "오후 11시", "오전 10시"], answer: 0, explanation: "오후 1시에서 1시간 전은 낮 12시, 또 1시간 전은 오전 11시입니다.", hint: "오후 1시는 12시 다음이에요. 거꾸로 2시간을 거슬러 올라가 보세요." },
+    { q: "5000m는 몇 km일까요?", options: ["5km", "50km", "500km", "0.5km"], answer: 0, explanation: "1000m는 1km와 같습니다. 따라서 5000m는 5km입니다.", hint: "0을 3개 지우면 m를 km로 바꿀 수 있어요." }
+];
 
 let isLowSpec = false, isDemolishMode = false, shuffledQuestions = [], currentQuestionIndex = 0;
-let gameStartTime = 0, firstTryCount = 0, isFirstTry = true, needsPathWarning = false;
-
-// Initialize gridMap immediately at top-level
-for(let r=0; r<GRID_SIZE; r++){
-    gridMap[r] = [];
-    for(let c=0; c<GRID_SIZE; c++){
-        const isDark = (r+c)%2 === 0;
-        gridMap[r][c] = { type: "grass", color: isDark ? "#b8e994" : "#a8e6cf", obj: null };
-    }
-}
-
-/* ==========================================================================
-   1. DATABASE CONFIGURATION (SILENT BACKGROUND CONNECTIVITY)
-   ========================================================================== */
-const DEFAULT_SUPABASE_URL = "https://anahupoathfzihixuiyt.supabase.co";
-const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuYWh1cG9hdGhmemloaXh1aXl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNzIwNjEsImV4cCI6MjEwMDg0ODA2MX0.YJCXmEuq_9Ic87Kro4BWXz0_qlSubQEHxzWGqaBO-6Y";
-const TEACHER_PASSWORD_CONFIG = "1234";
-
-let supabaseClient = null;
-let useSupabase = false;
-
-const DB_NAME = 'RollercoasterTycoonDB';
-const DB_VERSION = 1;
-let localDb = null;
-let dbInitPromise = null;
-
-function ensureDB() {
-    if (localDb) return Promise.resolve(localDb);
-    if (!dbInitPromise) dbInitPromise = initDB();
-    return dbInitPromise;
-}
-
-function initSupabaseClient() {
-    const url = DEFAULT_SUPABASE_URL;
-    const key = DEFAULT_SUPABASE_KEY;
-    
-    if (url && key && window.supabase) {
-        try {
-            supabaseClient = window.supabase.createClient(url, key);
-            useSupabase = true;
-            console.log("Database initialized.");
-            return true;
-        } catch (e) {
-            console.error("Database connection error:", e);
-        }
-    }
-    useSupabase = false;
-    return false;
-}
-
-function initDB() {
-    initSupabaseClient();
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onerror = (e) => { console.error("IndexedDB error:", e); reject(e); };
-        request.onsuccess = (e) => {
-            localDb = e.target.result;
-            seedDefaultQuestions().then(resolve);
-        };
-        request.onupgradeneeded = (e) => {
-            localDb = e.target.result;
-            if (!localDb.objectStoreNames.contains('saves')) {
-                localDb.createObjectStore('saves', { keyPath: 'nickname' });
-            }
-            if (!localDb.objectStoreNames.contains('questions')) {
-                localDb.createObjectStore('questions', { keyPath: 'id', autoIncrement: true });
-            }
-        };
-    });
-}
-
-// DEFAULT 20 QUESTIONS FOR INITIAL SEED
-const DEFAULT_QUESTIONS = [
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이를 무엇이라고 하나요?", options: ["1 mm", "1 m", "1 km", "10 mm"], answer: "1 mm", explanation: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이는 1mm입니다.", hint: "자에 있는 가장 작은 눈금입니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "5cm 3mm는 몇 mm일까요?", options: ["53 mm", "35 mm", "503 mm", "8 mm"], answer: "53 mm", explanation: "1cm는 10mm입니다. 5cm는 50mm이므로 53mm입니다.", hint: "1cm = 10mm" },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "1000m를 하나로 묶어서 나타내는 단위는 무엇일까요?", options: ["1 km", "10 km", "100 cm", "10 mm"], answer: "1 km", explanation: "1000m는 1km(킬로미터)라고 씁니다.", hint: "아주 먼 거리를 나타내는 단위입니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "2km 400m는 몇 m일까요? (숫자만 입력 가능)", options: [], answer: "2400", explanation: "1km는 1000m입니다. 2km는 2000m이므로 2400m입니다.", hint: "1km = 1000m" },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "3500m는 몇 km 몇 m일까요?", options: ["3km 500m", "35km", "3km 50m", "5km 300m"], answer: "3km 500m", explanation: "3000m는 3km이므로 3km 500m입니다.", hint: "1000m마다 1km입니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "시계의 초침이 한 바퀴를 도는 시간인 '1분'은 몇 초일까요?", options: [], answer: "60초", explanation: "초침이 한 바퀴 도는 시간은 60초입니다.", hint: "60초 = 1분" },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "80초는 몇 분 몇 초일까요?", options: ["1분 20초", "1분 0초", "2분 20초", "8분"], answer: "1분 20초", explanation: "80초에서 60초(1분)를 빼면 20초가 남으므로 1분 20초입니다.", hint: "80 - 60 = 20" },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "1분 30초는 모두 몇 초일까요?", options: [], answer: "90초", explanation: "1분은 60초입니다. 60 + 30 = 90초입니다.", hint: "60 + 30" },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "시간의 덧셈을 해봅시다. 2시간 10분 + 1시간 20분은?", options: ["3시간 30분", "3시간 10분", "4시간 30분", "2시간 30분"], answer: "3시간 30분", explanation: "2+1=3시간, 10+20=30분입니다.", hint: "시간은 시간끼리, 분은 분끼리 더합니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "30분 40초 + 10분 30초는 얼마일까요?", options: ["41분 10초", "40분 70초", "41분 30초", "40분 10초"], answer: "41분 10초", explanation: "40+30=70초(1분 10초)이므로 41분 10초입니다.", hint: "60초마다 1분 올려줍니다." }
-];
-
-function seedDefaultQuestions() {
-    return new Promise((resolve) => {
-        const tx = localDb.transaction('questions', 'readonly');
-        const store = tx.objectStore('questions');
-        const countReq = store.count();
-        countReq.onsuccess = () => {
-            if (countReq.result === 0) {
-                const writeTx = localDb.transaction('questions', 'readwrite');
-                const writeStore = writeTx.objectStore('questions');
-                DEFAULT_QUESTIONS.forEach(q => writeStore.add(q));
-                writeTx.oncomplete = () => resolve();
-            } else {
-                resolve();
-            }
-        };
-    });
-}
-
-// HYBRID DATA WRAPPERS
-async function dbSaveUserData(nickname, password, gameData) {
-    if (useSupabase && supabaseClient) {
-        try {
-            const { error } = await supabaseClient
-                .from('game_saves')
-                .upsert({
-                    nickname: nickname,
-                    password: password,
-                    game_data: gameData,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'nickname' });
-            if (error) throw error;
-            console.log("Saved to cloud DB:", nickname);
-            return;
-        } catch (err) {
-            console.error("Cloud DB Save Failed, falling back to LocalIndexedDB:", err);
-        }
-    }
-    
-    // IndexedDB Fallback
-    await ensureDB();
-    return new Promise((resolve, reject) => {
-        if (!localDb) return resolve();
-        const tx = localDb.transaction('saves', 'readwrite');
-        const store = tx.objectStore('saves');
-        const req = store.put({ nickname, password, updatedAt: Date.now(), gameData });
-        req.onsuccess = () => resolve();
-        req.onerror = (e) => reject(e);
-    });
-}
-
-async function dbGetUserData(nickname) {
-    if (useSupabase && supabaseClient) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('game_saves')
-                .select('*')
-                .eq('nickname', nickname)
-                .single();
-            if (error && error.code !== 'PGRST116') throw error;
-            if (data) {
-                return { nickname: data.nickname, password: data.password, gameData: data.game_data };
-            }
-        } catch (err) {
-            console.error("Cloud DB Read Failed, falling back to LocalIndexedDB:", err);
-        }
-    }
-    
-    // IndexedDB Fallback
-    await ensureDB();
-    return new Promise((resolve, reject) => {
-        if (!localDb) return resolve(null);
-        const tx = localDb.transaction('saves', 'readonly');
-        const store = tx.objectStore('saves');
-        const req = store.get(nickname);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = (e) => reject(e);
-    });
-}
-
-async function dbGetAllSaves() {
-    if (useSupabase && supabaseClient) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('game_saves')
-                .select('*');
-            if (error) throw error;
-            if (data) {
-                return data.map(d => ({
-                    nickname: d.nickname,
-                    gameData: d.game_data
-                }));
-            }
-        } catch (err) {
-            console.error("Cloud DB Get All Saves Failed, falling back to LocalIndexedDB:", err);
-        }
-    }
-    
-    // IndexedDB Fallback
-    await ensureDB();
-    return new Promise((resolve, reject) => {
-        if (!localDb) return resolve([]);
-        const tx = localDb.transaction('saves', 'readonly');
-        const store = tx.objectStore('saves');
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = (e) => reject(e);
-    });
-}
-
-async function dbGetAllQuestions() {
-    if (useSupabase && supabaseClient) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('quiz_questions')
-                .select('*');
-            if (error) throw error;
-            if (data && data.length > 0) {
-                return data.map(q => ({
-                    id: q.id,
-                    unit: q.unit,
-                    type: q.type,
-                    q: q.question,
-                    options: q.options || [],
-                    answer: q.answer,
-                    explanation: q.explanation,
-                    hint: q.hint,
-                    isCustom: q.is_custom
-                }));
-            }
-        } catch (err) {
-            console.error("Cloud DB Questions Fetch Failed, falling back to LocalIndexedDB:", err);
-        }
-    }
-    
-    // IndexedDB Fallback
-    return new Promise((resolve, reject) => {
-        const tx = localDb.transaction('questions', 'readonly');
-        const store = tx.objectStore('questions');
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = (e) => reject(e);
-    });
-}
-
-async function dbAddQuestions(questionsArray) {
-    if (useSupabase && supabaseClient) {
-        try {
-            const rows = questionsArray.map(q => ({
-                unit: q.unit,
-                type: q.type,
-                question: q.q,
-                options: q.options || [],
-                answer: q.answer,
-                explanation: q.explanation,
-                hint: q.hint,
-                is_custom: true
-            }));
-            const { error } = await supabaseClient
-                .from('quiz_questions')
-                .insert(rows);
-            if (error) throw error;
-            return;
-        } catch (err) {
-            console.error("Cloud DB Insert Questions Failed, falling back to LocalIndexedDB:", err);
-        }
-    }
-    
-    // IndexedDB Fallback
-    return new Promise((resolve, reject) => {
-        const tx = localDb.transaction('questions', 'readwrite');
-        const store = tx.objectStore('questions');
-        questionsArray.forEach(q => store.add(q));
-        tx.oncomplete = () => resolve();
-        tx.onerror = (e) => reject(e);
-    });
-}
-
-async function dbResetQuestions() {
-    if (useSupabase && supabaseClient) {
-        try {
-            await supabaseClient.from('quiz_questions').delete().eq('is_custom', true);
-            return;
-        } catch (err) {
-            console.error("Cloud DB Reset Questions Failed:", err);
-        }
-    }
-    
-    // IndexedDB Fallback
-    return new Promise((resolve, reject) => {
-        const tx = localDb.transaction('questions', 'readwrite');
-        const store = tx.objectStore('questions');
-        const clearReq = store.clear();
-        clearReq.onsuccess = () => {
-            DEFAULT_QUESTIONS.forEach(q => store.add(q));
-            tx.oncomplete = () => resolve();
-        };
-        tx.onerror = (e) => reject(e);
-    });
-}
-
-/* ==========================================================================
-   2. UI HELPER & TOAST NOTIFICATIONS
-   ========================================================================== */
-function showToast(message) {
-    const toast = document.getElementById('toast-notification');
-    toast.innerText = message;
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 2500);
-}
-
-/* ==========================================================================
-   3. AUTH & START ENGINE
-   ========================================================================== */
-let authMode = 'new';
-let currentNickname = '';
-let currentPassword = '';
-
-function openAuthModal(mode) {
-    authMode = mode;
-    document.getElementById('input-nickname').value = '';
-    document.getElementById('input-password').value = '';
-    
-    if (mode === 'new') {
-        document.getElementById('auth-title').innerText = '🎮 새로 시작하기';
-        document.getElementById('auth-subtitle').innerText = '경영자 닉네임과 비밀번호를 설정하세요.';
-        document.getElementById('btn-auth-confirm').innerText = '공원 개장하기';
-    } else {
-        document.getElementById('auth-title').innerText = '📂 이어하기';
-        document.getElementById('auth-subtitle').innerText = '저장할 때 입력했던 닉네임과 비밀번호를 입력하세요.';
-        document.getElementById('btn-auth-confirm').innerText = '데이터 불러오기';
-    }
-    
-    document.getElementById('main-menu-modal').style.display = 'none';
-    document.getElementById('auth-modal').style.display = 'flex';
-}
-
-function closeAuthModal() {
-    document.getElementById('auth-modal').style.display = 'none';
-    document.getElementById('main-menu-modal').style.display = 'flex';
-}
-
-async function submitAuth() {
-    const nickname = document.getElementById('input-nickname').value.trim();
-    const password = document.getElementById('input-password').value.trim();
-    
-    if (!nickname || !password) {
-        alert("닉네임과 비밀번호를 모두 입력해주세요.");
-        return;
-    }
-    
-    try {
-        const existingSave = await dbGetUserData(nickname);
-        
-        if (authMode === 'new') {
-            if (existingSave) {
-                if (!confirm(`'${nickname}' 닉네임의 저장 데이터가 이미 존재합니다. 덮어쓰고 새로 시작하시겠습니까?`)) {
-                    return;
-                }
-            }
-            currentNickname = nickname;
-            currentPassword = password;
-            playerName = nickname;
-            isLowSpec = document.getElementById('low-spec-toggle').checked;
-            
-            resetGameVariables();
-            await saveCurrentGameData();
-            document.getElementById('auth-modal').style.display = 'none';
-            startGame();
-            showToast(`✨ '${nickname}' 원장님의 공원이 새로 개장되었습니다!`);
-            
-        } else { // 'load'
-            if (!existingSave) {
-                alert(`'${nickname}' 닉네임으로 저장된 데이터를 찾을 수 없습니다.`);
-                return;
-            }
-            if (existingSave.password !== password) {
-                alert("비밀번호가 일치하지 않습니다. 다시 확인해주세요.");
-                return;
-            }
-            
-            currentNickname = nickname;
-            currentPassword = password;
-            playerName = nickname;
-            isLowSpec = document.getElementById('low-spec-toggle').checked;
-            
-            restoreGameData(existingSave.gameData);
-            document.getElementById('auth-modal').style.display = 'none';
-            startGame();
-            showToast(`📂 '${nickname}' 원장님의 공원을 성공적으로 불러왔습니다!`);
-        }
-    } catch (e) {
-        console.error("Auth Error:", e);
-        alert("데이터 처리 중 오류가 발생했습니다: " + (e.message || e));
-    }
-}
-
-/* ==========================================================================
-   4. HALL OF FAME (명예의 전당) ENGINE
-   ========================================================================== */
-let hallOfFameTab = 'money'; // 'money' or 'rating'
-
-async function openHallOfFame() {
-    document.getElementById('main-menu-modal').style.display = 'none';
-    document.getElementById('fame-modal').style.display = 'flex';
-    await renderHallOfFameTable();
-}
-
-function closeHallOfFame() {
-    document.getElementById('fame-modal').style.display = 'none';
-    document.getElementById('main-menu-modal').style.display = 'flex';
-}
-
-function switchRankTab(tab) {
-    hallOfFameTab = tab;
-    document.getElementById('rank-tab-money').style.background = tab === 'money' ? 'linear-gradient(135deg, #ffc6ff, #f72585)' : '#e0e0e0';
-    document.getElementById('rank-tab-money').style.color = tab === 'money' ? '#fff' : '#4a3e56';
-    document.getElementById('rank-tab-rating').style.background = tab === 'rating' ? 'linear-gradient(135deg, #ffc6ff, #f72585)' : '#e0e0e0';
-    document.getElementById('rank-tab-rating').style.color = tab === 'rating' ? '#fff' : '#4a3e56';
-    renderHallOfFameTable();
-}
-
-async function renderHallOfFameTable() {
-    const container = document.getElementById('hall-of-fame-list');
-    container.innerHTML = '<p style="font-size:13px; color:#888; text-align:center; padding:20px;">순위 데이터를 불러오는 중...</p>';
-    
-    const saves = await dbGetAllSaves();
-    if (!saves || saves.length === 0) {
-        container.innerHTML = '<p style="font-size:13px; color:#888; text-align:center; padding:20px;">아직 저장된 명예의 전당 기록이 없습니다.</p>';
-        return;
-    }
-    
-    // Sort saves
-    const sorted = [...saves].sort((a, b) => {
-        const gdA = a.gameData || {};
-        const gdB = b.gameData || {};
-        if (hallOfFameTab === 'money') {
-            return (gdB.money || 0) - (gdA.money || 0);
-        } else {
-            return (gdB.rating || 0) - (gdA.rating || 0);
-        }
-    });
-    
-    let html = `<table class="questions-table">
-        <thead>
-            <tr>
-                <th style="width:18%;">순위</th>
-                <th style="width:30%;">경영자 닉네임</th>
-                <th style="width:26%;">보유 자금</th>
-                <th style="width:26%;">공원 가치</th>
-            </tr>
-        </thead>
-        <tbody>`;
-        
-    sorted.slice(0, 20).forEach((s, idx) => {
-        const rank = idx + 1;
-        const gd = s.gameData || {};
-        const moneyVal = gd.money !== undefined ? gd.money : 0;
-        const ratingVal = gd.rating || 0;
-        
-        let rankBadgeClass = 'rank-badge rank-other';
-        let rankText = `${rank}위`;
-        if (rank === 1) { rankBadgeClass = 'rank-badge rank-1'; rankText = '🥇 1위'; }
-        else if (rank === 2) { rankBadgeClass = 'rank-badge rank-2'; rankText = '🥈 2위'; }
-        else if (rank === 3) { rankBadgeClass = 'rank-badge rank-3'; rankText = '🥉 3위'; }
-        
-        html += `<tr>
-            <td><span class="${rankBadgeClass}">${rankText}</span></td>
-            <td><b>${s.nickname}</b></td>
-            <td style="color:var(--money-green); font-weight:bold;">₩ ${formatMoney(moneyVal)}</td>
-            <td style="color:#ff758f; font-weight:bold;">⭐ ${ratingVal}</td>
-        </tr>`;
-    });
-    
-    html += `</tbody></table>`;
-    container.innerHTML = html;
-}
-
-/* ==========================================================================
-   5. TEACHER AUTHENTICATION
-   ========================================================================== */
-function promptTeacherAuth() {
-    document.getElementById('teacher-password-input').value = '';
-    document.getElementById('main-menu-modal').style.display = 'none';
-    document.getElementById('teacher-auth-modal').style.display = 'flex';
-}
-
-function closeTeacherAuthModal() {
-    document.getElementById('teacher-auth-modal').style.display = 'none';
-    document.getElementById('main-menu-modal').style.display = 'flex';
-}
-
-function verifyTeacherPassword() {
-    const inputPass = document.getElementById('teacher-password-input').value.trim();
-    if (inputPass === TEACHER_PASSWORD_CONFIG) {
-        document.getElementById('teacher-auth-modal').style.display = 'none';
-        openTeacherDashboard();
-    } else {
-        alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
-    }
-}
-
-/* ==========================================================================
-   6. GAME STATE SAVE / LOAD ENGINE
-   ========================================================================== */
-function serializeGameData() {
-    let gridMapState = [];
-    for(let r=0; r<GRID_SIZE; r++) {
-        gridMapState[r] = [];
-        for(let c=0; c<GRID_SIZE; c++) {
-            const tile = gridMap[r][c];
-            gridMapState[r][c] = {
-                type: tile.type,
-                itemId: tile.item ? tile.item.id : null
-            };
-        }
-    }
-    
-    let entitiesState = entities.map(e => ({
-        r: e.r,
-        c: e.c,
-        itemId: e.item.id
-    }));
-    
-    return {
-        money: money,
-        rating: rating,
-        incomePerTick: incomePerTick,
-        parkEntranceBuilt: parkEntranceBuilt,
-        entrancePos: entrancePos,
-        firstTryCount: firstTryCount,
-        solvedCount: currentQuestionIndex,
-        gridMapState: gridMapState,
-        entitiesState: entitiesState,
-        savedTime: Date.now()
-    };
-}
-
-function restoreGameData(data) {
-    if (!data) return;
-    money = data.money !== undefined ? data.money : 5000;
-    rating = data.rating || 0;
-    incomePerTick = data.incomePerTick || 0;
-    parkEntranceBuilt = data.parkEntranceBuilt || false;
-    entrancePos = data.entrancePos || null;
-    firstTryCount = data.firstTryCount || 0;
-    currentQuestionIndex = data.solvedCount || 0;
-    
-    entities = [];
-    for(let r=0; r<GRID_SIZE; r++) {
-        for(let c=0; c<GRID_SIZE; c++) {
-            const isDark = (r+c)%2 === 0;
-            gridMap[r][c] = { type: 'grass', color: isDark ? '#b8e994' : '#a8e6cf', obj: null };
-        }
-    }
-    
-    const catalogLookup = {};
-    Object.keys(CATALOG).forEach(cat => {
-        CATALOG[cat].forEach(item => catalogLookup[item.id] = item);
-    });
-    
-    if (data.entitiesState) {
-        data.entitiesState.forEach(es => {
-            const item = catalogLookup[es.itemId];
-            if (item) {
-                const newObj = { r: es.r, c: es.c, item: item, queue: [] };
-                entities.push(newObj);
-                for(let ir = es.r; ir < es.r + item.size; ir++) {
-                    for(let ic = es.c; ic < es.c + item.size; ic++) {
-                        if (gridMap[ir] && gridMap[ir][ic]) {
-                            gridMap[ir][ic].obj = newObj;
-                            if(item.type === 'path') {
-                                gridMap[ir][ic].type = 'path';
-                                gridMap[ir][ic].item = item;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-    
-    updateTopHUD();
-    if(parkEntranceBuilt) {
-        document.getElementById('entrance-warning').style.display = 'none';
-    } else {
-        document.getElementById('entrance-warning').style.display = 'inline-block';
-    }
-}
-
-async function saveCurrentGameData() {
-    if (!currentNickname) return;
-    const gameData = serializeGameData();
-    await dbSaveUserData(currentNickname, currentPassword, gameData);
-}
-
-async function manualSaveGame() {
-    if (!currentNickname) {
-        showToast("⚠️ 먼저 게임을 시작해주세요.");
-        return;
-    }
-    await saveCurrentGameData();
-    showToast("💾 게임 진행 상황이 안전하게 저장되었습니다!");
-}
-
-function resetGameVariables() {
-    money = 5000;
-    incomePerTick = 0;
-    rating = 0;
-    parkEntranceBuilt = false;
-    entrancePos = null;
-    currentQuestionIndex = 0;
-    firstTryCount = 0;
-    entities = [];
-    guestsList = [];
-    for(let r=0; r<GRID_SIZE; r++){
-        for(let c=0; c<GRID_SIZE; c++){
-            const isDark = (r+c)%2 === 0;
-            gridMap[r][c] = { type: 'grass', color: isDark ? '#b8e994' : '#a8e6cf', obj: null };
-        }
-    }
-    updateTopHUD();
-}
-
-/* ==========================================================================
-   7. TEACHER DASHBOARD & CSV SYSTEM
-   ========================================================================== */
-async function openTeacherDashboard() {
-    document.getElementById('teacher-modal').style.display = 'flex';
-    await renderQuestionsSummaryTable();
-}
-
-function closeTeacherDashboard() {
-    document.getElementById('teacher-modal').style.display = 'none';
-    document.getElementById('main-menu-modal').style.display = 'flex';
-}
-
-async function renderQuestionsSummaryTable() {
-    const questions = await dbGetAllQuestions();
-    const container = document.getElementById('questions-summary-list');
-    
-    if (!questions || questions.length === 0) {
-        container.innerHTML = '<p style="font-size:12px; color:#aaa;">등록된 문제가 없습니다.</p>';
-        return;
-    }
-    
-    const unitGroups = {};
-    questions.forEach(q => {
-        const u = q.unit || "기타 단원";
-        if (!unitGroups[u]) unitGroups[u] = { choice: 0, short: 0, total: 0 };
-        if (q.type === 'short') unitGroups[u].short++;
-        else unitGroups[u].choice++;
-        unitGroups[u].total++;
-    });
-    
-    let html = `<table class="questions-table">
-        <thead>
-            <tr>
-                <th>단원명</th>
-                <th>객관식</th>
-                <th>주관식</th>
-                <th>총 문제 수</th>
-            </tr>
-        </thead>
-        <tbody>`;
-        
-    Object.keys(unitGroups).forEach(unit => {
-        const g = unitGroups[unit];
-        html += `<tr>
-            <td>${unit}</td>
-            <td>${g.choice}개</td>
-            <td>${g.short}개</td>
-            <td><b>${g.total}개</b></td>
-        </tr>`;
-    });
-    
-    html += `</tbody></table>`;
-    container.innerHTML = html;
-}
-
-function downloadSampleCSV() {
-    const csvContent = "\uFEFF단원,유형,문제,선택지,정답,해설,힌트\n" +
-        "3학년 1학기 5단원 길이와 시간,객관식,1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이는?,1 mm;1 m;1 km;10 mm,1 mm,1cm를 10칸으로 나누면 1mm입니다.,자를 보세요.\n" +
-        "3학년 1학기 5단원 길이와 시간,주관식,5cm 3mm는 몇 mm일까요?,; ; ;,53 mm,1cm=10mm이므로 50mm+3mm=53mm입니다.,1cm = 10mm\n" +
-        "3학년 1학기 1단원 덧셈과 뺄셈,객관식,120 + 350의 값은 얼마일까요?,470;450;500;370,470,120 더하기 350은 470입니다.,백의 자리부터 더해보세요.\n" +
-        "3학년 1학기 1단원 덧셈과 뺄셈,주관식,500 - 150의 값은 얼마일까요?,; ; ;,350,500 빼기 150은 350입니다.,50 - 15 = ?";
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'MATH_QUIZ_TEMPLATE.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast("📄 CSV 양식 파일이 다운로드 되었습니다.");
-}
-
-function handleCSVUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        const text = e.target.result;
-        try {
-            const parsedQuestions = parseCSV(text);
-            if (parsedQuestions.length === 0) {
-                alert("업로드한 CSV 파일에서 올바른 문제를 찾을 수 없습니다. 양식을 확인해주세요.");
-                return;
-            }
-            await dbAddQuestions(parsedQuestions);
-            alert(`🎉 총 ${parsedQuestions.length}개의 새로운 문제가 DB에 등록되었습니다!`);
-            await renderQuestionsSummaryTable();
-        } catch (err) {
-            console.error(err);
-            alert("CSV 파일 해석 중 오류가 발생했습니다: " + err.message);
-        }
-    };
-    reader.readAsText(file, 'UTF-8');
-    event.target.value = '';
-}
-
-function parseCSV(text) {
-    const lines = text.split(/\r\n|\n/);
-    const questions = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-        
-        const cols = [];
-        let inQuotes = false;
-        let token = '';
-        
-        for (let c = 0; c < line.length; c++) {
-            const char = line[c];
-            if (char === '"') {
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                cols.push(token.trim());
-                token = '';
-            } else {
-                token += char;
-            }
-        }
-        cols.push(token.trim());
-        
-        if (cols.length >= 5) {
-            const unit = cols[0] || "자율 문제";
-            const rawType = cols[1] || "객관식";
-            const type = (rawType.includes("주관식") || rawType.toLowerCase() === "short") ? "short" : "choice";
-            const q = cols[2];
-            const rawOptions = cols[3] || "";
-            const answer = cols[4];
-            const explanation = cols[5] || "";
-            const hint = cols[6] || "";
-            
-            let options = [];
-            if (type === 'choice' && rawOptions) {
-                options = rawOptions.split(';').map(o => o.trim()).filter(o => o.length > 0);
-            }
-            
-            if (q && answer) {
-                questions.push({
-                    unit: unit,
-                    type: type,
-                    q: q,
-                    options: options,
-                    answer: answer,
-                    explanation: explanation,
-                    hint: hint,
-                    isCustom: true
-                });
-            }
-        }
-    }
-    return questions;
-}
-
-async function resetDefaultQuestions() {
-    if (confirm("정말로 모든 추가 문제를 삭제하고 기본 문제로 초기화하시겠습니까?")) {
-        await dbResetQuestions();
-        await renderQuestionsSummaryTable();
-        showToast("🔄 기본 문제로 초기화되었습니다.");
-    }
-}
-
-/* ==========================================================================
-   8. QUIZ ENGINE WITH UNIT SELECTION & Explicit Continue/Close Controls
-   ========================================================================== */
-let activeQuestions = [];
-let currentUnit = '전체 단원';
-
-async function openQuiz() {
-    const allQuestions = await dbGetAllQuestions();
-    if (!allQuestions || allQuestions.length === 0) {
-        alert("등록된 퀴즈 문제가 없습니다.");
-        return;
-    }
-    
-    const units = ['전체 단원', ...new Set(allQuestions.map(q => q.unit))];
-    const select = document.getElementById('quiz-unit-select');
-    select.innerHTML = '';
-    units.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u;
-        opt.innerText = u;
-        if (u === currentUnit) opt.selected = true;
-        select.appendChild(opt);
-    });
-    
-    filterQuestionsByUnit(allQuestions);
-}
-
-function onUnitChange() {
-    currentUnit = document.getElementById('quiz-unit-select').value;
-    dbGetAllQuestions().then(filterQuestionsByUnit);
-}
-
-function filterQuestionsByUnit(allQuestions) {
-    if (currentUnit === '전체 단원') {
-        activeQuestions = [...allQuestions];
-    } else {
-        activeQuestions = allQuestions.filter(q => q.unit === currentUnit);
-    }
-    
-    if (activeQuestions.length === 0) {
-        alert("선택한 단원에 문제가 없습니다.");
-        return;
-    }
-    
-    shuffledQuestions = [...activeQuestions].sort(() => Math.random() - 0.5);
-    currentQuestionIndex = 0;
-    renderCurrentQuiz();
-    document.getElementById('quiz-modal-overlay').style.display = 'flex';
-}
-
-function renderCurrentQuiz() {
-    if (currentQuestionIndex >= shuffledQuestions.length) {
-        showOutroModal();
-        document.getElementById('quiz-modal-overlay').style.display = 'none';
-        return;
-    }
-    
-    isFirstTry = true;
-    const qData = shuffledQuestions[currentQuestionIndex];
-    
-    document.getElementById('quiz-no').innerText = `문제 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
-    document.getElementById('quiz-type-tag').innerText = qData.type === 'short' ? '주관식' : '객관식';
-    document.getElementById('quiz-type-tag').style.background = qData.type === 'short' ? '#ff9aa2' : '#a0c4ff';
-    document.getElementById('quiz-type-tag').style.color = '#2b1e3a';
-    document.getElementById('quiz-text').innerText = qData.q;
-    
-    const optionsDiv = document.getElementById('quiz-options');
-    const shortBox = document.getElementById('short-answer-box');
-    const shortInput = document.getElementById('short-answer-input');
-    
-    optionsDiv.innerHTML = '';
-    document.getElementById('quiz-feedback').style.display = 'none';
-    document.getElementById('quiz-action-buttons').style.display = 'none';
-    
-    if (qData.type === 'choice') {
-        optionsDiv.style.display = 'grid';
-        shortBox.style.display = 'none';
-        
-        let opts = [...(qData.options || [])];
-        if (opts.length === 0) opts = [qData.answer, "다른 답1", "다른 답2", "다른 답3"];
-        opts.sort(() => Math.random() - 0.5);
-        
-        opts.forEach(optText => {
-            const btn = document.createElement('button');
-            btn.className = 'retro-button quiz-option';
-            btn.innerText = optText;
-            btn.onclick = () => checkQuizAnswer(optText, qData.answer, qData.explanation, qData.hint, btn);
-            optionsDiv.appendChild(btn);
-        });
-    } else {
-        optionsDiv.style.display = 'none';
-        shortBox.style.display = 'flex';
-        shortInput.value = '';
-        shortInput.focus();
-    }
-}
-
-function submitShortAnswer() {
-    const inputVal = document.getElementById('short-answer-input').value.trim();
-    if (!inputVal) return;
-    const qData = shuffledQuestions[currentQuestionIndex];
-    checkQuizAnswer(inputVal, qData.answer, qData.explanation, qData.hint, null);
-}
-
-function checkQuizAnswer(userAns, correctAns, explanation, hint, btnClicked) {
-    const cleanUser = String(userAns).replace(/\s+/g, '').toLowerCase();
-    const cleanCorrect = String(correctAns).replace(/\s+/g, '').toLowerCase();
-    
-    const isCorrect = (cleanUser === cleanCorrect) || 
-                      (cleanCorrect.includes(cleanUser) && cleanUser.length >= 2);
-    
-    if (isCorrect) {
-        if (isFirstTry) firstTryCount++;
-        isFirstTry = false;
-        
-        if (btnClicked) {
-            document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
-            btnClicked.style.background = '#b9fbc0';
-            btnClicked.style.color = '#1b4332';
-        }
-        
-        const reward = 3000 + Math.floor(Math.random() * 2000);
-        money += reward;
-        updateTopHUD();
-        saveCurrentGameData();
-        
-        const feedback = document.getElementById('quiz-feedback');
-        feedback.style.display = 'block';
-        feedback.innerHTML = `<span style="color: #2b9348;">✅ 정답입니다! 연구기금 ₩${formatMoney(reward)}을 획득했습니다.</span><br><br>${explanation}`;
-        document.getElementById('quiz-action-buttons').style.display = 'flex';
-    } else {
-        isFirstTry = false;
-        if (btnClicked) {
-            btnClicked.style.background = '#ffb7b2';
-            btnClicked.style.color = '#5c1d1d';
-            setTimeout(() => { btnClicked.style.background = '#f8f0fb'; btnClicked.color = '#4a3e56'; }, 1000);
-        }
-        document.getElementById('hint-text').innerText = hint || "다시 한번 곰곰이 생각해보세요!";
-        document.getElementById('hint-modal-overlay').style.display = 'flex';
-    }
-}
-
-function closeHintModal() {
-    document.getElementById('hint-modal-overlay').style.display = 'none';
-}
-
-function closeQuizModal() {
-    document.getElementById('quiz-modal-overlay').style.display = 'none';
-}
-
-function nextQuiz() {
-    currentQuestionIndex++;
-    if (currentQuestionIndex >= shuffledQuestions.length) {
-        document.getElementById('quiz-modal-overlay').style.display = 'none';
-        showOutroModal();
-    } else {
-        renderCurrentQuiz();
-    }
-}
-
-function showOutroModal() {
-    document.getElementById('outro-name').innerText = `${playerName || '수학대장'} 원장님`;
-    document.getElementById('outro-time').innerText = formatTime(Date.now() - gameStartTime);
-    document.getElementById('outro-first-try').innerText = `${firstTryCount} 개`;
-    document.getElementById('outro-score').innerText = `${Math.round((firstTryCount / Math.max(1, shuffledQuestions.length)) * 100)}%`;
-    document.getElementById('outro-guests').innerText = `${guestsList.length} 명`;
-    document.getElementById('outro-money').innerText = `₩ ${formatMoney(money)}`;
-    document.getElementById('outro-modal').style.display = 'flex';
-}
-
-function continueGame() {
-    document.getElementById('outro-modal').style.display = 'none';
-}
-
-/* ==========================================================================
-   9. ISOMETRIC ANIMATED ENGINE & UNIQUE CANVAS DESIGNS FOR EACH COASTER TYPE
-   ========================================================================== */
-const BGM_TRACKS = [
-    "https://cdn.jsdelivr.net/gh/photonstorm/phaser-examples@master/examples/assets/audio/oedipus_wizball_highscore.mp3",
-    "https://upload.wikimedia.org/wikipedia/commons/3/37/A_Happy_Day.ogg",
-    "https://upload.wikimedia.org/wikipedia/commons/c/c5/A_Comical_Theme.ogg"
-];
+let gameStartTime = 0, firstTryCount = 0, isFirstTry = true; 
 
 let currentTrack = 0;
 const bgmPlayer = document.getElementById('bgm-audio');
+const BGM_TRACKS = [
+    "https://cdn.jsdelivr.net/gh/photonstorm/phaser-examples@master/examples/assets/audio/oedipus_wizball_highscore.mp3",
+    "https://upload.wikimedia.org/wikipedia/commons/3/37/A_Happy_Day.ogg",
+    "https://upload.wikimedia.org/wikipedia/commons/c/c5/A_Comical_Theme.ogg",
+    "https://cdn.jsdelivr.net/gh/photonstorm/phaser-examples@master/examples/assets/audio/bodenstaendig_2000_in_rock_4bit.mp3",
+    "https://cdn.jsdelivr.net/gh/mdn/webaudio-examples@main/audio-basics/outfoxing.mp3"
+];
 
 function toggleBGM() {
     const btn = document.getElementById('bgm-play-btn');
     if (bgmPlayer.paused) {
         if (!bgmPlayer.src) bgmPlayer.src = BGM_TRACKS[currentTrack];
-        bgmPlayer.play().catch(e => console.log("BGM Error:", e));
+        bgmPlayer.play().catch(e => console.log("BGM Play Error:", e));
         btn.innerText = "⏸ BGM 정지";
     } else {
         bgmPlayer.pause();
@@ -1418,99 +237,9 @@ function nextBGM() {
     currentTrack = (currentTrack + 1) % BGM_TRACKS.length;
     bgmPlayer.src = BGM_TRACKS[currentTrack];
     if (document.getElementById('bgm-play-btn').innerText === "⏸ BGM 정지") {
-        bgmPlayer.play().catch(e => console.log("BGM Error:", e));
+        bgmPlayer.play().catch(e => console.log("BGM Play Error:", e));
     }
-    document.getElementById('bgm-track-info').innerText = `Track ${currentTrack + 1}/3`;
-}
-
-// FULL CATALOG & PROCEDURAL CANVAS RENDERING FROM ORIGINAL FILE
-
-let canvas = null, ctx = null;
-
-function initCanvas() {
-    canvas = document.getElementById("gameCanvas");
-    if (!canvas) return;
-    ctx = canvas.getContext("2d");
-    resize();
-    centerCamera();
-    bindCanvasEvents();
-}
-
-function centerCamera() {
-    if (!canvas) return;
-    camX = 0;
-    camY = window.innerHeight / 2 - (GRID_SIZE * TILE_H / 2);
-}
-
-function resize() {
-    if (!canvas) return;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-
-window.addEventListener("resize", resize);
-window.addEventListener("orientationchange", () => setTimeout(resize, 100));
-
-function toScreen(r, c) {
-    if (!canvas) return { x: 0, y: 0 };
-    return { x: (c - r) * (TILE_W / 2) + camX + canvas.width / 2, y: (c + r) * (TILE_H / 2) + camY };
-}
-
-function toGrid(sx, sy) {
-    if (!canvas) return { r: 0, c: 0 };
-    const adjX = sx - camX - canvas.width / 2;
-    const adjY = sy - camY;
-    return {
-        r: Math.floor((adjY / (TILE_H / 2) - adjX / (TILE_W / 2)) / 2),
-        c: Math.floor((adjX / (TILE_W / 2) + adjY / (TILE_H / 2)) / 2)
-    };
-}
-
-let canvasEventsBound = false;
-function bindCanvasEvents() {
-    if (!canvas || canvasEventsBound) return;
-    canvasEventsBound = true;
-    canvas.addEventListener("mousedown", e => { if(e.button === 2) { cancelModes(); return; } isDragging = true; dragStartX = e.clientX; dragStartY = e.clientY; camStartX = camX; camStartY = camY; });
-    canvas.addEventListener("mousemove", e => { mouseX = (e.clientX - canvas.width/2) / currentScale + canvas.width/2; mouseY = (e.clientY - canvas.height/2) / currentScale + canvas.height/2; if(isDragging) { camX = camStartX + (e.clientX - dragStartX) / currentScale; camY = camStartY + (e.clientY - dragStartY) / currentScale; } });
-    canvas.addEventListener("mouseup", e => {
-        if(e.button === 2) return; isDragging = false;
-        if(Math.abs(e.clientX - dragStartX) < 5 && Math.abs(e.clientY - dragStartY) < 5) {
-            const adjX = (e.clientX - canvas.width/2) / currentScale + canvas.width/2; const adjY = (e.clientY - canvas.height/2) / currentScale + canvas.height/2;
-            if(currentBuildItem) buildItemAt(adjX, adjY); else if(isDemolishMode) demolishItemAt(adjX, adjY);
-        }
-    });
-    canvas.addEventListener("wheel", e => { e.preventDefault(); const zoomAmount = e.deltaY > 0 ? 0.9 : 1.1; currentScale = Math.min(Math.max(0.3, currentScale * zoomAmount), 3.0); }, { passive: false });
-    canvas.addEventListener("contextmenu", e => { e.preventDefault(); cancelModes(); });
-
-    canvas.addEventListener("touchstart", e => {
-        if(e.target !== canvas) return; e.preventDefault(); 
-        if (e.touches.length === 1) {
-            isDragging = true; const t = e.touches[0]; dragStartX = t.clientX; dragStartY = t.clientY; mouseX = (t.clientX - canvas.width/2) / currentScale + canvas.width/2; mouseY = (t.clientY - canvas.height/2) / currentScale + canvas.height/2; camStartX = camX; camStartY = camY;
-        } else if (e.touches.length === 2) { isDragging = false; initialPinchDistance = getPinchDistance(e); initialScale = currentScale; }
-    }, { passive: false });
-
-    canvas.addEventListener("touchmove", e => {
-        if(e.target !== canvas) return; e.preventDefault();
-        if (e.touches.length === 1 && isDragging) {
-            const t = e.touches[0]; mouseX = (t.clientX - canvas.width/2) / currentScale + canvas.width/2; mouseY = (t.clientY - canvas.height/2) / currentScale + canvas.height/2; camX = camStartX + (t.clientX - dragStartX) / currentScale; camY = camStartY + (t.clientY - dragStartY) / currentScale; 
-        } else if (e.touches.length === 2 && initialPinchDistance) {
-            const currentDistance = getPinchDistance(e); const scaleModifier = currentDistance / initialPinchDistance; currentScale = Math.min(Math.max(0.3, initialScale * scaleModifier), 3.0);
-        }
-    }, { passive: false });
-
-    canvas.addEventListener("touchend", e => {
-        if(e.target !== canvas) return; e.preventDefault();
-        if (e.touches.length < 2) { initialPinchDistance = null; }
-        if (e.touches.length === 0) {
-            if(isDragging) {
-                isDragging = false; const t = e.changedTouches[0];
-                if(Math.abs(t.clientX - dragStartX) < 5 && Math.abs(t.clientY - dragStartY) < 5) {
-                    const adjX = (t.clientX - canvas.width/2) / currentScale + canvas.width/2; const adjY = (t.clientY - canvas.height/2) / currentScale + canvas.height/2;
-                    if(currentBuildItem) buildItemAt(adjX, adjY); else if(isDemolishMode) demolishItemAt(adjX, adjY);
-                }
-            }
-        }
-    }, { passive: false });
+    document.getElementById('bgm-track-info').innerText = `Track ${currentTrack + 1}/5`;
 }
 
 const CATALOG = {
@@ -1617,6 +346,31 @@ const CATALOG = {
         { id: 'scenery_flowers', name: '꽃단지', type: 'scenery', cost: 100, income: 0, appeal: 12, size: 1, color: '#ff55aa', icon: '🌷', renderType: 'flowers' }
     ]
 };
+
+const TILE_W = 64, TILE_H = 32, GRID_SIZE = 30;
+let camX = 0, camY = 0, money = 5000, incomePerTick = 0, rating = 0;
+let currentBuildItem = null, parkEntranceBuilt = false, entrancePos = null, playerName = ""; 
+let gridMap = [], entities = [], floatingTexts = [], explosions = [], needsPathWarning = false;
+
+for(let r=0; r<GRID_SIZE; r++){
+    gridMap[r] = [];
+    for(let c=0; c<GRID_SIZE; c++){
+        const isDark = (r+c)%2 === 0;
+        gridMap[r][c] = { type: 'grass', color: isDark ? '#4c8a41' : '#457e3a', obj: null };
+    }
+}
+
+const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
+function centerCamera() { camX = 0; camY = window.innerHeight / 2 - (GRID_SIZE * TILE_H / 2); }
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize); window.addEventListener('orientationchange', () => setTimeout(resize, 100));
+resize(); centerCamera(); 
+
+function toScreen(r, c) { return { x: (c - r) * (TILE_W / 2) + camX + canvas.width / 2, y: (c + r) * (TILE_H / 2) + camY }; }
+function toGrid(sx, sy) {
+    const adjX = sx - camX - canvas.width / 2; const adjY = sy - camY;
+    return { r: Math.floor((adjY / (TILE_H / 2) - adjX / (TILE_W / 2)) / 2), c: Math.floor((adjX / (TILE_W / 2) + adjY / (TILE_H / 2)) / 2) };
+}
 
 function drawTile(sx, sy, color, highlight = false, isPath = false, tileItem = null, r = 0, c = 0, isDemolishHighlight = false) {
     let actualColor = color, strokeColor = '#2b5a26', isHsl = false;
@@ -2226,7 +980,7 @@ function shadeColor(color, percent) {
     const RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16)); const GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16)); const BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16)); return "#"+RR+GG+BB;
 }
 
-
+let guestsList = [];
 function spawnGuestAt(r, c) {
     const hairColors = ['#1a1a1a', '#4a2511', '#6b4226', '#d4af37', '#8b0000', '#555555'], pantsColors = ['#1e3a8a', '#333333', '#8b5a2b', '#2f4f4f', '#111111', '#4b0082'], skinColors = ['#ffccaa', '#ffbba0', '#eebbaa', '#ddaa88', '#d2b48c'];
     guestsList.push({ r: r, c: c, target: {r: r, c: c}, lastPos: {r: r, c: c}, status: 'wandering', targetRide: null, targetToilet: null, nausea: 0, toiletUrge: 0, timer: 0, color: ['#ef4444', '#3b82f6', '#eab308', '#ffffff', '#d946ef', '#22c55e'][Math.floor(Math.random()*6)], hairColor: hairColors[Math.floor(Math.random()*hairColors.length)], pantsColor: pantsColors[Math.floor(Math.random()*pantsColors.length)], skinColor: skinColors[Math.floor(Math.random()*skinColors.length)], walkPhase: Math.random() * Math.PI * 2, isMoving: false, dirX: 1 });
@@ -2355,12 +1109,47 @@ function drawDetailedGuest(ctx, g, sx, sy) {
 let currentScale = 1.0, initialPinchDistance = null, initialScale = 1.0, mouseX = 0, mouseY = 0, isDragging = false, dragStartX, dragStartY, camStartX, camStartY;
 function getPinchDistance(e) { return Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); }
 
+canvas.addEventListener('mousedown', e => { if(e.button === 2) { cancelModes(); return; } isDragging = true; dragStartX = e.clientX; dragStartY = e.clientY; camStartX = camX; camStartY = camY; });
+canvas.addEventListener('mousemove', e => { mouseX = (e.clientX - canvas.width/2) / currentScale + canvas.width/2; mouseY = (e.clientY - canvas.height/2) / currentScale + canvas.height/2; if(isDragging) { camX = camStartX + (e.clientX - dragStartX) / currentScale; camY = camStartY + (e.clientY - dragStartY) / currentScale; } });
+canvas.addEventListener('mouseup', e => {
+    if(e.button === 2) return; isDragging = false;
+    if(Math.abs(e.clientX - dragStartX) < 5 && Math.abs(e.clientY - dragStartY) < 5) {
+        const adjX = (e.clientX - canvas.width/2) / currentScale + canvas.width/2; const adjY = (e.clientY - canvas.height/2) / currentScale + canvas.height/2;
+        if(currentBuildItem) buildItemAt(adjX, adjY); else if(isDemolishMode) demolishItemAt(adjX, adjY);
+    }
+});
+canvas.addEventListener('wheel', e => { e.preventDefault(); const zoomAmount = e.deltaY > 0 ? 0.9 : 1.1; currentScale = Math.min(Math.max(0.3, currentScale * zoomAmount), 3.0); }, { passive: false });
+canvas.addEventListener('contextmenu', e => { e.preventDefault(); cancelModes(); });
 
+canvas.addEventListener('touchstart', e => {
+    if(e.target !== canvas) return; e.preventDefault(); 
+    if (e.touches.length === 1) {
+        isDragging = true; const t = e.touches[0]; dragStartX = t.clientX; dragStartY = t.clientY; mouseX = (t.clientX - canvas.width/2) / currentScale + canvas.width/2; mouseY = (t.clientY - canvas.height/2) / currentScale + canvas.height/2; camStartX = camX; camStartY = camY;
+    } else if (e.touches.length === 2) { isDragging = false; initialPinchDistance = getPinchDistance(e); initialScale = currentScale; }
+}, { passive: false });
 
+canvas.addEventListener('touchmove', e => {
+    if(e.target !== canvas) return; e.preventDefault();
+    if (e.touches.length === 1 && isDragging) {
+        const t = e.touches[0]; mouseX = (t.clientX - canvas.width/2) / currentScale + canvas.width/2; mouseY = (t.clientY - canvas.height/2) / currentScale + canvas.height/2; camX = camStartX + (t.clientX - dragStartX) / currentScale; camY = camStartY + (t.clientY - dragStartY) / currentScale; 
+    } else if (e.touches.length === 2 && initialPinchDistance) {
+        const currentDistance = getPinchDistance(e); const scaleModifier = currentDistance / initialPinchDistance; currentScale = Math.min(Math.max(0.3, initialScale * scaleModifier), 3.0);
+    }
+}, { passive: false });
 
-
-
-
+canvas.addEventListener('touchend', e => {
+    if(e.target !== canvas) return; e.preventDefault();
+    if (e.touches.length < 2) { initialPinchDistance = null; }
+    if (e.touches.length === 0) {
+        if(isDragging) {
+            isDragging = false; const t = e.changedTouches[0];
+            if(Math.abs(t.clientX - dragStartX) < 5 && Math.abs(t.clientY - dragStartY) < 5) {
+                const adjX = (t.clientX - canvas.width/2) / currentScale + canvas.width/2; const adjY = (t.clientY - canvas.height/2) / currentScale + canvas.height/2;
+                if(currentBuildItem) buildItemAt(adjX, adjY); else if(isDemolishMode) demolishItemAt(adjX, adjY);
+            }
+        }
+    }
+}, { passive: false });
 
 
 function render() {
@@ -2453,9 +1242,7 @@ function formatTime(ms) { let totalSeconds = Math.floor(ms / 1000); return `${Ma
 function updateTopHUD() { document.getElementById('money-count').textContent = `₩ ${formatMoney(money)}`; document.getElementById('rating-count').textContent = rating; document.getElementById('guest-count').textContent = guestsList.length; }
 
 setInterval(() => {
-    const mainModal = document.getElementById("main-menu-modal");
-    const authModal = document.getElementById("auth-modal");
-    if ((mainModal && mainModal.style.display !== "none") || (authModal && authModal.style.display !== "none")) return;
+    if(document.getElementById('intro-modal').style.display !== 'none' || document.getElementById('quiz-modal-overlay').style.display === 'flex') return;
     if(incomePerTick > 0 && guestsList.length > 0) {
         money += incomePerTick; updateTopHUD(); const incomeEntities = entities.filter(e => e.item.income > 0);
         if(incomeEntities.length > 0) { const e = incomeEntities[Math.floor(Math.random() * incomeEntities.length)]; const { x, y } = toScreen(e.r, e.c); showFloatingText(x, y - 50, `+₩${formatMoney(e.item.income)}`, "68, 255, 68"); }
@@ -2479,15 +1266,47 @@ setInterval(() => {
     }
 }, 2000);
 
+function shuffleQuestions() { shuffledQuestions = [...MATH_QUESTIONS]; currentQuestionIndex = 0; firstTryCount = 0; }
+function openQuiz() {
+    if (currentQuestionIndex >= 30) { showFloatingText(canvas.width/2, canvas.height/2, "모든 연구 과제(보너스 포함)를 완료했습니다!", "255, 200, 0"); return; }
+    if(shuffledQuestions.length === 0 || currentQuestionIndex >= shuffledQuestions.length) shuffleQuestions();
+    isFirstTry = true; const qData = shuffledQuestions[currentQuestionIndex];
+    document.getElementById('quiz-no').innerText = currentQuestionIndex >= 20 ? `🌟 보너스 과제 - ${currentQuestionIndex + 1 - 20} / 10 🌟` : `연구 과제 (길이와 시간) - ${currentQuestionIndex + 1} / 30`;
+    document.getElementById('quiz-text').innerText = qData.q;
+    const optionsDiv = document.getElementById('quiz-options'); optionsDiv.innerHTML = '';
+    let options = qData.options.map((opt, i) => ({ text: opt, index: i })); options.sort(() => Math.random() - 0.5); 
+    options.forEach((opt) => {
+        const btn = document.createElement('button'); btn.className = 'retro-button quiz-option'; btn.innerText = opt.text;
+        btn.onclick = () => checkAnswer(opt.index, qData.answer, qData.explanation, qData.hint, btn); optionsDiv.appendChild(btn);
+    });
+    document.getElementById('quiz-feedback').style.display = 'none'; document.getElementById('btn-next-quiz').style.display = 'none'; document.getElementById('quiz-modal-overlay').style.display = 'flex';
+}
 
+function checkAnswer(selectedIndex, correctAnswerIndex, explanation, hint, btnClicked) {
+    if(selectedIndex === correctAnswerIndex) {
+        if(isFirstTry) firstTryCount++; isFirstTry = false; 
+        document.querySelectorAll('.quiz-option').forEach(btn => btn.disabled = true); btnClicked.style.background = '#44ff44'; btnClicked.style.color = '#000';
+        const reward = 3000 + Math.floor(Math.random()*2000); money += reward; updateTopHUD();
+        const feedback = document.getElementById('quiz-feedback'); feedback.style.display = 'block'; feedback.innerHTML = `<span style="color: #00aa00;">✅ 정답입니다! 연구기금 ₩${formatMoney(reward)}을 획득했습니다.</span><br><br>${explanation}`; document.getElementById('btn-next-quiz').style.display = 'block';
+    } else {
+        isFirstTry = false; btnClicked.style.background = '#ff4444'; btnClicked.style.color = '#fff'; document.getElementById('hint-text').innerText = hint || "다시 한번 곰곰이 생각해보세요!"; document.getElementById('hint-modal-overlay').style.display = 'flex';
+        setTimeout(() => { btnClicked.style.background = '#e0e0e0'; btnClicked.style.color = '#000'; }, 1000);
+    }
+}
+function closeHintModal() { document.getElementById('hint-modal-overlay').style.display = 'none'; }
+function nextQuiz() {
+    currentQuestionIndex++; document.getElementById('quiz-modal-overlay').style.display = 'none';
+    if (currentQuestionIndex === 20) alert("🎉 정규 20문제를 모두 풀었습니다!\n이어서 추가 자금 획득을 위한 '보너스 10문제'가 시작됩니다. 🎉");
+    if(currentQuestionIndex >= 30) showOutroModal();
+}
 
-function startGame() { initCanvas(); gameStartTime = Date.now(); updateTopHUD(); setTimeout(centerCamera, 100); requestAnimationFrame(loop); }
-
-window.addEventListener('load', () => {
-    initDB().then(() => {
-        console.log("DB System Initialized.");
-    }).catch(e => console.error("DB init failed:", e));
-});
+function showNicknameInput() { isLowSpec = document.getElementById('low-spec-toggle').checked; document.getElementById('intro-modal').style.display = 'none'; document.getElementById('nickname-modal').style.display = 'flex'; }
+function submitNickname() { playerName = document.getElementById('player-nickname').value.trim() || "익명"; document.getElementById('nickname-modal').style.display = 'none'; startGame(); }
+function showOutroModal() {
+    document.getElementById('outro-name').innerText = `${playerName} 원장님`; document.getElementById('outro-time').innerText = formatTime(Date.now() - gameStartTime); document.getElementById('outro-first-try').innerText = `${firstTryCount} 개`; document.getElementById('outro-guests').innerText = `${guestsList.length} 명`; document.getElementById('outro-money').innerText = `₩ ${formatMoney(money)}`; document.getElementById('outro-modal').style.display = 'flex';
+}
+function continueGame() { document.getElementById('outro-modal').style.display = 'none'; }
+function startGame() { gameStartTime = Date.now(); document.getElementById('entrance-warning').style.display = 'inline-block'; shuffleQuestions(); updateTopHUD(); setTimeout(centerCamera, 100); requestAnimationFrame(loop); }
 </script>
 </body>
 </html>
