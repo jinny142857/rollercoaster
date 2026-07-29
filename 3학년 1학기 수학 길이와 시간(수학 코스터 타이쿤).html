@@ -252,9 +252,11 @@ canvas { display: block; width: 100%; height: 100%; }
         </div>
         
         <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button class="retro-button start-btn" style="flex: 1; background: linear-gradient(135deg, #b9fbc0, #74c69d); color: #1b4332;" id="btn-auth-confirm" onclick="submitAuth()">확인 및 시작</button>
+            <button class="retro-button start-btn" style="flex: 2; background: linear-gradient(135deg, #b9fbc0, #74c69d); color: #1b4332;" id="btn-auth-confirm" onclick="submitAuth()">확인 및 시작</button>
+            <button class="retro-button start-btn" style="flex: 1; background: linear-gradient(135deg, #ff9494, #ff5252); color: #fff; display: none;" id="btn-auth-delete" onclick="deleteSelectedSave()">🗑️ 삭제</button>
             <button class="retro-button start-btn" style="flex: 1; background: #e0e0e0; color: #666;" onclick="closeAuthModal()">취소</button>
         </div>
+        <div id="saves-quick-list" style="margin-top: 14px; max-height: 140px; overflow-y: auto; display: none;"></div>
     </div>
 </div>
 
@@ -299,11 +301,19 @@ canvas { display: block; width: 100%; height: 100%; }
 <div id="teacher-modal" class="modal-overlay">
     <div class="retro-panel teacher-box">
         <div class="window-titlebar">
-            <span>👩‍🏫 교사 대시보드 (수학 문제 및 단원 관리)</span>
+            <span>👩‍🏫 교사 대시보드 (문제 & 학생 계정 관리)</span>
             <div class="close-btn" onclick="closeTeacherDashboard()">X</div>
         </div>
         <div class="teacher-content">
-            <div class="teacher-card">
+            <!-- TAB SWITCHER -->
+            <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                <button class="retro-button" id="teacher-tab-btn-questions" style="flex: 1; padding: 10px; font-weight: bold; background: linear-gradient(135deg, #ffd6e7, #ff8fab); color: #4a1525;" onclick="switchTeacherTab('questions')">📚 1. 수학 문제 관리</button>
+                <button class="retro-button" id="teacher-tab-btn-students" style="flex: 1; padding: 10px; font-weight: bold; background: #e0e0e0; color: #666;" onclick="switchTeacherTab('students')">👥 2. 학생 계정 & 학습 로그</button>
+            </div>
+
+            <!-- SECTION 1: QUESTIONS MANAGEMENT -->
+            <div id="teacher-section-questions" style="display: block;">
+                <div class="teacher-card">
                 <div class="teacher-card-title">📥 1. 문제 작성용 CSV 기본 포맷 양식 다운로드</div>
                 <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
                     엑셀(Excel)이나 한글에서 수정 가능한 CSV 양식을 다운로드합니다. 단원명, 유형(객관식/주관식), 문제, 선택지, 정답, 해설, 힌트를 입력할 수 있습니다.
@@ -330,10 +340,24 @@ canvas { display: block; width: 100%; height: 100%; }
                         🔄 기본 문제로 초기화
                     </button>
                 </div>
-                <div id="questions-summary-list" style="max-height: 200px; overflow-y: auto;"></div>
+                <div id="questions-summary-list" style="max-height: 180px; overflow-y: auto;"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: STUDENTS & ACTIVITY LOGS MANAGEMENT -->
+            <div id="teacher-section-students" style="display: none;">
+                <div class="teacher-card">
+                    <div class="teacher-card-title" style="justify-content: space-between;">
+                        <span>👥 학생 계정 및 학습 진행 기록 (실시간 DB)</span>
+                        <button class="retro-button" style="padding: 6px 12px; background: linear-gradient(135deg, #a0c4ff, #b5e2ff); color: #1b263b; font-size: 12px;" onclick="renderTeacherStudentsLogTable()">
+                            🔄 새로고침
+                        </button>
+                    </div>
+                    <div id="students-log-list" style="max-height: 320px; overflow-y: auto;"></div>
+                </div>
             </div>
             
-            <button class="retro-button" style="padding: 12px; background: #e0e0e0; color: #4a3e56; width: 100%; font-weight: bold;" onclick="closeTeacherDashboard()">닫기</button>
+            <button class="retro-button" style="padding: 12px; background: #e0e0e0; color: #4a3e56; width: 100%; font-weight: bold; margin-top: 10px;" onclick="closeTeacherDashboard()">닫기</button>
         </div>
     </div>
 </div>
@@ -406,7 +430,10 @@ canvas { display: block; width: 100%; height: 100%; }
     <div class="hud-item" title="방문객 수"><div class="hud-icon">🚶</div><span id="guest-count">0</span>명<span id="entrance-warning">⚠️ 입구를 건설하세요!</span></div>
     <div class="hud-item" title="자금"><div class="hud-icon">💰</div><span id="money-count" class="hud-money">₩ 5,000</span></div>
     <div class="hud-item" title="공원 가치"><div class="hud-icon">⭐</div><span id="rating-count">0</span></div>
-    <button class="retro-button" style="margin-left: auto; padding: 6px 14px; font-size: 13px; background: linear-gradient(135deg, #b9fbc0, #74c69d); color: #1b4332;" onclick="manualSaveGame()">💾 저장하기</button>
+    <div style="margin-left: auto; display: flex; gap: 8px;">
+            <button class="retro-button" style="padding: 6px 14px; font-size: 13px; background: linear-gradient(135deg, #b9fbc0, #74c69d); color: #1b4332;" onclick="manualSaveGame()">💾 저장하기</button>
+            <button class="retro-button" style="padding: 6px 14px; font-size: 13px; background: linear-gradient(135deg, #ffd6e7, #ff8fab); color: #4a1525;" onclick="goToHomeScreen()">🏠 홈으로</button>
+        </div>
 </div>
 
 <div id="bgm-panel">
@@ -548,6 +575,31 @@ function seedDefaultQuestions() {
 }
 
 // HYBRID DATA WRAPPERS
+
+async function dbDeleteSaveData(nickname) {
+    if (useSupabase && supabaseClient) {
+        try {
+            const { error } = await supabaseClient
+                .from("game_saves")
+                .delete()
+                .eq("nickname", nickname);
+            if (error) console.error("Cloud DB Delete Error:", error);
+        } catch (err) {
+            console.error("Cloud DB Delete Failed:", err);
+        }
+    }
+    
+    await ensureDB();
+    return new Promise((resolve, reject) => {
+        if (!localDb) return resolve();
+        const tx = localDb.transaction("saves", "readwrite");
+        const store = tx.objectStore("saves");
+        const req = store.delete(nickname);
+        req.onsuccess = () => resolve();
+        req.onerror = (e) => reject(e);
+    });
+}
+
 async function dbSaveUserData(nickname, password, gameData) {
     if (useSupabase && supabaseClient) {
         try {
@@ -763,11 +815,68 @@ function openAuthModal(mode) {
     
     document.getElementById('main-menu-modal').style.display = 'none';
     document.getElementById('auth-modal').style.display = 'flex';
+    const delBtn = document.getElementById('btn-auth-delete');
+    const qList = document.getElementById('saves-quick-list');
+    if (mode === 'load') {
+        if (delBtn) delBtn.style.display = 'inline-block';
+        if (qList) { qList.style.display = 'block'; renderSavesQuickList(); }
+    } else {
+        if (delBtn) delBtn.style.display = 'none';
+        if (qList) qList.style.display = 'none';
+    }
 }
 
 function closeAuthModal() {
     document.getElementById('auth-modal').style.display = 'none';
     document.getElementById('main-menu-modal').style.display = 'flex';
+}
+
+
+async function deleteSelectedSave(targetNickname) {
+    const nickname = targetNickname || document.getElementById('input-nickname').value.trim();
+    if (!nickname) {
+        alert("삭제할 저장 데이터의 닉네임을 입력하거나 선택해주세요.");
+        return;
+    }
+    const save = await dbGetUserData(nickname);
+    if (!save) {
+        alert(`'${nickname}' 닉네임으로 저장된 데이터를 찾을 수 없습니다.`);
+        return;
+    }
+    if (confirm(`정말로 '${nickname}' 원장님의 저장 데이터를 삭제하시겠습니까?\n(삭제된 데이터는 복구할 수 없습니다.)`)) {
+        await dbDeleteSaveData(nickname);
+        document.getElementById('input-nickname').value = '';
+        document.getElementById('input-password').value = '';
+        showToast(`🗑️ '${nickname}' 저장 데이터가 삭제되었습니다.`);
+        if (authMode === 'load') renderSavesQuickList();
+    }
+}
+
+async function renderSavesQuickList() {
+    const qList = document.getElementById('saves-quick-list');
+    if (!qList) return;
+    qList.innerHTML = '<p style="font-size:12px; color:#888; text-align:center;">저장된 데이터를 불러오는 중...</p>';
+    const saves = await dbGetAllSaves();
+    if (!saves || saves.length === 0) {
+        qList.innerHTML = '<p style="font-size:12px; color:#888; text-align:center;">저장된 데이터가 없습니다.</p>';
+        return;
+    }
+    let html = '<div style="font-size:12px; font-weight:bold; color:#ff4d6d; margin-bottom:6px;">📂 저장된 목록 (클릭하여 선택):</div>';
+    saves.forEach(s => {
+        const rating = s.gameData ? (s.gameData.rating || 0) : 0;
+        const money = s.gameData ? (s.gameData.money || 0) : 0;
+        html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #ffc6ff; padding: 6px 10px; border-radius: 10px; margin-bottom: 4px; cursor: pointer;" onclick="selectQuickSave('${s.nickname}')">
+                <span style="font-weight: bold; font-size: 13px; color: #4a3e56;">👑 ${s.nickname} <span style="font-size: 11px; color: #777; font-weight: normal;">(⭐ ${rating} | ₩${formatMoney(money)})</span></span>
+                <button class="retro-button" style="padding: 2px 8px; font-size: 11px; background: #ff4d6d; color: #fff;" onclick="event.stopPropagation(); deleteSelectedSave('${s.nickname}')">🗑️ 삭제</button>
+            </div>
+        `;
+    });
+    qList.innerHTML = html;
+}
+
+function selectQuickSave(nickname) {
+    document.getElementById('input-nickname').value = nickname;
 }
 
 async function submitAuth() {
@@ -784,9 +893,8 @@ async function submitAuth() {
         
         if (authMode === 'new') {
             if (existingSave) {
-                if (!confirm(`'${nickname}' 닉네임의 저장 데이터가 이미 존재합니다. 덮어쓰고 새로 시작하시겠습니까?`)) {
-                    return;
-                }
+                alert("이미 사용 중인 닉네임입니다.");
+                return;
             }
             currentNickname = nickname;
             currentPassword = password;
@@ -1024,6 +1132,17 @@ async function saveCurrentGameData() {
     await dbSaveUserData(currentNickname, currentPassword, gameData);
 }
 
+
+async function goToHomeScreen() {
+    if (confirm("홈 화면으로 이동하시겠습니까?\n현재 진행 중인 공원 정보가 자동 저장됩니다.")) {
+        if (currentNickname) {
+            await saveCurrentGameData();
+        }
+        document.getElementById('main-menu-modal').style.display = 'flex';
+        showToast("🏠 홈 화면으로 이동했습니다.");
+    }
+}
+
 async function manualSaveGame() {
     if (!currentNickname) {
         showToast("⚠️ 먼저 게임을 시작해주세요.");
@@ -1055,6 +1174,97 @@ function resetGameVariables() {
 /* ==========================================================================
    7. TEACHER DASHBOARD & CSV SYSTEM
    ========================================================================== */
+
+let currentTeacherTab = 'questions';
+
+function switchTeacherTab(tabName) {
+    currentTeacherTab = tabName;
+    const qTabBtn = document.getElementById('teacher-tab-btn-questions');
+    const sTabBtn = document.getElementById('teacher-tab-btn-students');
+    const qSection = document.getElementById('teacher-section-questions');
+    const sSection = document.getElementById('teacher-section-students');
+
+    if (!qTabBtn || !sTabBtn) return;
+
+    if (tabName === 'questions') {
+        qTabBtn.style.background = 'linear-gradient(135deg, #ffd6e7, #ff8fab)';
+        qTabBtn.style.color = '#4a1525';
+        sTabBtn.style.background = '#e0e0e0';
+        sTabBtn.style.color = '#666';
+        qSection.style.display = 'block';
+        sSection.style.display = 'none';
+        renderQuestionsSummaryTable();
+    } else {
+        sTabBtn.style.background = 'linear-gradient(135deg, #a0c4ff, #b5e2ff)';
+        sTabBtn.style.color = '#1b263b';
+        qTabBtn.style.background = '#e0e0e0';
+        qTabBtn.style.color = '#666';
+        qSection.style.display = 'none';
+        sSection.style.display = 'block';
+        renderTeacherStudentsLogTable();
+    }
+}
+
+async function renderTeacherStudentsLogTable() {
+    const container = document.getElementById('students-log-list');
+    if (!container) return;
+    container.innerHTML = '<p style="font-size:13px; color:#888; text-align:center; padding:15px;">학생 계정 및 로그 데이터를 불러오는 중...</p>';
+    
+    const saves = await dbGetAllSaves();
+    if (!saves || saves.length === 0) {
+        container.innerHTML = '<p style="font-size:13px; color:#888; text-align:center; padding:15px;">등록된 학생 계정이 없습니다.</p>';
+        return;
+    }
+    
+    let html = `
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+            <thead>
+                <tr style="background: #f0f0f5; color: #4a3e56; border-bottom: 2px solid #ddd;">
+                    <th style="padding: 8px;">학생 닉네임</th>
+                    <th style="padding: 8px;">공원 가치</th>
+                    <th style="padding: 8px;">보유 자금</th>
+                    <th style="padding: 8px;">해결 문제</th>
+                    <th style="padding: 8px;">최근 학습일시</th>
+                    <th style="padding: 8px; text-align: center;">계정 관리</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    saves.forEach(s => {
+        const gd = s.gameData || {};
+        const rating = gd.rating || 0;
+        const money = gd.money || 0;
+        const solved = gd.solvedCount || 0;
+        const firstTry = gd.firstTryCount || 0;
+        const savedTimeStr = gd.savedTime ? new Date(gd.savedTime).toLocaleString('ko-KR') : '기록 없음';
+        
+        html += `
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px; font-weight: bold; color: #ff4d6d;">👑 ${s.nickname}</td>
+                <td style="padding: 8px;">⭐ ${rating}</td>
+                <td style="padding: 8px; color: var(--money-green); font-weight: bold;">₩${formatMoney(money)}</td>
+                <td style="padding: 8px;">🎯 ${solved}문제 (단번에 ${firstTry}개)</td>
+                <td style="padding: 8px; font-size: 11px; color: #777;">⏱️ ${savedTimeStr}</td>
+                <td style="padding: 8px; text-align: center;">
+                    <button class="retro-button" style="padding: 4px 8px; font-size: 11px; background: #ff4d6d; color: #fff;" onclick="deleteStudentAccount('${s.nickname}')">🗑️ 삭제</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+async function deleteStudentAccount(nickname) {
+    if (confirm(`정말로 학생 '${nickname}'의 계정 및 모든 저장 데이터를 삭제하시겠습니까?`)) {
+        await dbDeleteSaveData(nickname);
+        showToast(`🗑️ 학생 '${nickname}' 계정이 삭제되었습니다.`);
+        renderTeacherStudentsLogTable();
+    }
+}
+
 async function openTeacherDashboard() {
     document.getElementById('teacher-modal').style.display = 'flex';
     await renderQuestionsSummaryTable();
