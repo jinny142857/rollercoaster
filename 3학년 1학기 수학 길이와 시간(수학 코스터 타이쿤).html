@@ -834,8 +834,10 @@ function closeAuthModal() {
 
 async function deleteSelectedSave(targetNickname) {
     const nickname = targetNickname || document.getElementById('input-nickname').value.trim();
+    const password = document.getElementById('input-password').value.trim();
+    
     if (!nickname) {
-        alert("삭제할 저장 데이터의 닉네임을 입력하거나 선택해주세요.");
+        alert("삭제할 저장 데이터의 닉네임을 입력하거나 목록에서 선택해주세요.");
         return;
     }
     const save = await dbGetUserData(nickname);
@@ -843,35 +845,72 @@ async function deleteSelectedSave(targetNickname) {
         alert(`'${nickname}' 닉네임으로 저장된 데이터를 찾을 수 없습니다.`);
         return;
     }
+    if (!password) {
+        alert("저장 데이터를 삭제하려면 비밀번호 입력창에 해당 계정의 비밀번호를 입력해주세요.");
+        return;
+    }
+    if (save.password !== password) {
+        alert("비밀번호가 일치하지 않습니다. 계정 비밀번호를 정확히 입력해야 삭제할 수 있습니다.");
+        return;
+    }
     if (confirm(`정말로 '${nickname}' 원장님의 저장 데이터를 삭제하시겠습니까?\n(삭제된 데이터는 복구할 수 없습니다.)`)) {
         await dbDeleteSaveData(nickname);
         document.getElementById('input-nickname').value = '';
         document.getElementById('input-password').value = '';
-        showToast(`🗑️ '${nickname}' 저장 데이터가 삭제되었습니다.`);
+        showToast(`🗑️ '${nickname}' 저장 데이터가 안전하게 삭제되었습니다.`);
         if (authMode === 'load') renderSavesQuickList();
     }
 }
+
+let cachedAllSaves = [];
 
 async function renderSavesQuickList() {
     const qList = document.getElementById('saves-quick-list');
     if (!qList) return;
     qList.innerHTML = '<p style="font-size:12px; color:#888; text-align:center;">저장된 데이터를 불러오는 중...</p>';
-    const saves = await dbGetAllSaves();
-    if (!saves || saves.length === 0) {
+    cachedAllSaves = await dbGetAllSaves() || [];
+    filterSavesQuickList();
+}
+
+function filterSavesQuickList() {
+    const qList = document.getElementById('saves-quick-list');
+    if (!qList) return;
+    const filter = (document.getElementById('save-search-input')?.value || '').trim().toLowerCase();
+    
+    if (!cachedAllSaves || cachedAllSaves.length === 0) {
         qList.innerHTML = '<p style="font-size:12px; color:#888; text-align:center;">저장된 데이터가 없습니다.</p>';
         return;
     }
-    let html = '<div style="font-size:12px; font-weight:bold; color:#ff4d6d; margin-bottom:6px;">📂 저장된 목록 (클릭하여 선택):</div>';
-    saves.forEach(s => {
-        const rating = s.gameData ? (s.gameData.rating || 0) : 0;
-        const money = s.gameData ? (s.gameData.money || 0) : 0;
-        html += `
-            <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #ffc6ff; padding: 6px 10px; border-radius: 10px; margin-bottom: 4px; cursor: pointer;" onclick="selectQuickSave('${s.nickname}')">
-                <span style="font-weight: bold; font-size: 13px; color: #4a3e56;">👑 ${s.nickname} <span style="font-size: 11px; color: #777; font-weight: normal;">(⭐ ${rating} | ₩${formatMoney(money)})</span></span>
-                <button class="retro-button" style="padding: 2px 8px; font-size: 11px; background: #ff4d6d; color: #fff;" onclick="event.stopPropagation(); deleteSelectedSave('${s.nickname}')">🗑️ 삭제</button>
-            </div>
-        `;
-    });
+    
+    let filtered = cachedAllSaves;
+    if (filter) {
+        filtered = cachedAllSaves.filter(s => s.nickname.toLowerCase().includes(filter));
+    }
+    
+    // Limit to top 10 for performance when user count grows large
+    const displayList = filtered.slice(0, 10);
+    
+    let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size:12px; font-weight:bold; color:#ff4d6d;">📂 저장된 목록 (${filtered.length}개 중 최근 10개 표시):</span>
+            <input type="text" id="save-search-input" value="${filter}" placeholder="🔍 닉네임 검색..." oninput="filterSavesQuickList()" style="padding: 4px 8px; font-size: 11px; border: 1px solid #ffc6ff; border-radius: 8px; width: 130px;">
+        </div>
+    `;
+    
+    if (displayList.length === 0) {
+        html += '<p style="font-size:12px; color:#888; text-align:center; padding:10px;">검색 결과가 없습니다.</p>';
+    } else {
+        displayList.forEach(s => {
+            const rating = s.gameData ? (s.gameData.rating || 0) : 0;
+            const money = s.gameData ? (s.gameData.money || 0) : 0;
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #ffc6ff; padding: 6px 10px; border-radius: 10px; margin-bottom: 4px; cursor: pointer;" onclick="selectQuickSave('${s.nickname}')">
+                    <span style="font-weight: bold; font-size: 13px; color: #4a3e56;">👑 ${s.nickname} <span style="font-size: 11px; color: #777; font-weight: normal;">(⭐ ${rating} | ₩${formatMoney(money)})</span></span>
+                    <button class="retro-button" style="padding: 2px 8px; font-size: 11px; background: #ff4d6d; color: #fff;" onclick="event.stopPropagation(); deleteSelectedSave('${s.nickname}')">🗑️ 삭제</button>
+                </div>
+            `;
+        });
+    }
     qList.innerHTML = html;
 }
 
@@ -1205,18 +1244,37 @@ function switchTeacherTab(tabName) {
     }
 }
 
+let cachedTeacherSaves = [];
+
 async function renderTeacherStudentsLogTable() {
     const container = document.getElementById('students-log-list');
     if (!container) return;
     container.innerHTML = '<p style="font-size:13px; color:#888; text-align:center; padding:15px;">학생 계정 및 로그 데이터를 불러오는 중...</p>';
     
-    const saves = await dbGetAllSaves();
-    if (!saves || saves.length === 0) {
+    cachedTeacherSaves = await dbGetAllSaves() || [];
+    filterTeacherStudentsLogTable();
+}
+
+function filterTeacherStudentsLogTable() {
+    const container = document.getElementById('students-log-list');
+    if (!container) return;
+    const filter = (document.getElementById('teacher-student-search')?.value || '').trim().toLowerCase();
+    
+    if (!cachedTeacherSaves || cachedTeacherSaves.length === 0) {
         container.innerHTML = '<p style="font-size:13px; color:#888; text-align:center; padding:15px;">등록된 학생 계정이 없습니다.</p>';
         return;
     }
     
+    let filtered = cachedTeacherSaves;
+    if (filter) {
+        filtered = cachedTeacherSaves.filter(s => s.nickname.toLowerCase().includes(filter));
+    }
+    
     let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 12px; font-weight: bold; color: #4a3e56;">총 학생 계정: ${cachedTeacherSaves.length}명 (검색: ${filtered.length}명)</span>
+            <input type="text" id="teacher-student-search" value="${filter}" placeholder="🔍 학생 닉네임 검색..." oninput="filterTeacherStudentsLogTable()" style="padding: 6px 12px; font-size: 12px; border: 1px solid #b5e2ff; border-radius: 10px; width: 160px;">
+        </div>
         <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
             <thead>
                 <tr style="background: #f0f0f5; color: #4a3e56; border-bottom: 2px solid #ddd;">
@@ -1231,27 +1289,31 @@ async function renderTeacherStudentsLogTable() {
             <tbody>
     `;
     
-    saves.forEach(s => {
-        const gd = s.gameData || {};
-        const rating = gd.rating || 0;
-        const money = gd.money || 0;
-        const solved = gd.solvedCount || 0;
-        const firstTry = gd.firstTryCount || 0;
-        const savedTimeStr = gd.savedTime ? new Date(gd.savedTime).toLocaleString('ko-KR') : '기록 없음';
-        
-        html += `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px; font-weight: bold; color: #ff4d6d;">👑 ${s.nickname}</td>
-                <td style="padding: 8px;">⭐ ${rating}</td>
-                <td style="padding: 8px; color: var(--money-green); font-weight: bold;">₩${formatMoney(money)}</td>
-                <td style="padding: 8px;">🎯 ${solved}문제 (단번에 ${firstTry}개)</td>
-                <td style="padding: 8px; font-size: 11px; color: #777;">⏱️ ${savedTimeStr}</td>
-                <td style="padding: 8px; text-align: center;">
-                    <button class="retro-button" style="padding: 4px 8px; font-size: 11px; background: #ff4d6d; color: #fff;" onclick="deleteStudentAccount('${s.nickname}')">🗑️ 삭제</button>
-                </td>
-            </tr>
-        `;
-    });
+    if (filtered.length === 0) {
+        html += `<tr><td colspan="6" style="padding: 15px; text-align: center; color: #888;">일치하는 학생 검색 결과가 없습니다.</td></tr>`;
+    } else {
+        filtered.forEach(s => {
+            const gd = s.gameData || {};
+            const rating = gd.rating || 0;
+            const money = gd.money || 0;
+            const solved = gd.solvedCount || 0;
+            const firstTry = gd.firstTryCount || 0;
+            const savedTimeStr = gd.savedTime ? new Date(gd.savedTime).toLocaleString('ko-KR') : '기록 없음';
+            
+            html += `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold; color: #ff4d6d;">👑 ${s.nickname}</td>
+                    <td style="padding: 8px;">⭐ ${rating}</td>
+                    <td style="padding: 8px; color: var(--money-green); font-weight: bold;">₩${formatMoney(money)}</td>
+                    <td style="padding: 8px;">🎯 ${solved}문제 (단번에 ${firstTry}개)</td>
+                    <td style="padding: 8px; font-size: 11px; color: #777;">⏱️ ${savedTimeStr}</td>
+                    <td style="padding: 8px; text-align: center;">
+                        <button class="retro-button" style="padding: 4px 8px; font-size: 11px; background: #ff4d6d; color: #fff;" onclick="deleteStudentAccount('${s.nickname}')">🗑️ 계정 삭제</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
     
     html += `</tbody></table>`;
     container.innerHTML = html;
