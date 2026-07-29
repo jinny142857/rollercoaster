@@ -24,6 +24,9 @@ CREATE POLICY "Allow public insert/update access on game_saves"
 CREATE POLICY "Allow public update access on game_saves" 
     ON public.game_saves FOR UPDATE USING (true);
 
+CREATE POLICY "Allow public delete access on game_saves" 
+    ON public.game_saves FOR DELETE USING (true);
+
 
 -- 2. 수학 퀴즈 문제 데이터 테이블 (quiz_questions)
 CREATE TABLE IF NOT EXISTS public.quiz_questions (
