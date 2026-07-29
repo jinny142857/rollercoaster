@@ -1,0 +1,21 @@
+{
+  "name": "rollercoaster-tycoon-math-quiz",
+  "version": "1.0.0",
+  "description": "롤러코스터 타이쿤 기반 초등 수학 퀴즈 웹앱 (Supabase & Vercel)",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx -y serve .",
+    "start": "npx -y serve .",
+    "build": "echo 'No build step required for static app'"
+  },
+  "keywords": [
+    "tycoon",
+    "math",
+    "quiz",
+    "game",
+    "supabase",
+    "vercel"
+  ],
+  "author": "",
+  "license": "MIT"
+}

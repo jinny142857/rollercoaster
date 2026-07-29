@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>수학 코스터 타이쿤 (Supabase & Vercel)</title>
+<!-- Supabase Client JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Galmuri9&family=Noto+Sans+KR:wght@400;700&display=swap');
+:root { --tycoon-bg: #405850; --tycoon-border-light: #688878; --tycoon-border-dark: #203028; --tycoon-text: #ffffff; --tycoon-text-dark: #111111; --tycoon-green: #3a7336; --tycoon-green-dark: #2b5a26; --money-green: #44ff44; }
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+body, html { width: 100%; height: 100%; overflow: hidden; background-color: #2b3a32; font-family: 'Galmuri9', 'Tahoma', 'Noto Sans KR', sans-serif; }
+#game-container { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+#game-container:active { cursor: grabbing; }
+canvas { display: block; width: 100%; height: 100%; }
+.retro-panel { background: var(--tycoon-bg); border-top: 2px solid var(--tycoon-border-light); border-left: 2px solid var(--tycoon-border-light); border-right: 2px solid var(--tycoon-border-dark); border-bottom: 2px solid var(--tycoon-border-dark); color: var(--tycoon-text); }
+.retro-button { background: #507060; border-top: 2px solid var(--tycoon-border-light); border-left: 2px solid var(--tycoon-border-light); border-right: 2px solid var(--tycoon-border-dark); border-bottom: 2px solid var(--tycoon-border-dark); color: var(--tycoon-text); cursor: pointer; font-family: inherit; text-shadow: 1px 1px 0px #000; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.retro-button:active, .retro-button.active { border-top: 2px solid var(--tycoon-border-dark); border-left: 2px solid var(--tycoon-border-dark); border-right: 2px solid var(--tycoon-border-light); border-bottom: 2px solid var(--tycoon-border-light); background: #385045; padding-top: 2px; padding-left: 2px; }
+#btn-demolish.selected { background: #aa3333; border-top: 2px solid var(--tycoon-border-dark); border-left: 2px solid var(--tycoon-border-dark); border-right: 2px solid var(--tycoon-border-light); border-bottom: 2px solid var(--tycoon-border-light); padding-top: 2px; padding-left: 2px; }
+#top-hud { position: absolute; top: 0; left: 0; right: 0; height: 36px; background: rgba(32, 48, 40, 0.9); border-bottom: 2px solid var(--tycoon-border-dark); display: flex; align-items: center; padding: 0 10px; gap: 15px; z-index: 10; }
+.hud-item { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: bold; text-shadow: 1px 1px 0 #000; color: #fff; }
+.hud-money { color: var(--money-green); }
+.hud-icon { width: 24px; height: 24px; background: #688878; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid #111; }
+#entrance-warning { color: #ffaa44; font-size: 12px; animation: blink 1s infinite; margin-left: 5px; display: none; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+#bottom-toolbar { position: absolute; bottom: 10px; right: 10px; display: flex; gap: 5px; z-index: 10; }
+.tool-btn { width: 48px; height: 48px; font-size: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+.tool-btn span { font-size: 10px; margin-top: 2px; }
+#quiz-trigger-btn { position: absolute; bottom: 10px; left: 10px; height: 48px; padding: 0 16px; font-size: 15px; font-weight: bold; z-index: 10; display: flex; align-items: center; gap: 8px; background: #225588; }
+#quiz-trigger-btn:hover { background: #336699; }
+#bgm-panel { position: absolute; top: 45px; left: 10px; z-index: 10; display: flex; gap: 8px; align-items: center; background: rgba(32, 48, 40, 0.85); padding: 6px 12px; border: 2px solid var(--tycoon-border-dark); border-radius: 8px; }
+#build-window { position: absolute; bottom: 65px; right: 10px; width: 340px; max-height: 400px; display: none; flex-direction: column; z-index: 15; }
+.window-titlebar { background: #203028; padding: 6px 10px; font-size: 14px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+.close-btn { background: #882222; border: 1px solid #ffaaaa; border-right-color: #440000; border-bottom-color: #440000; width: 18px; height: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; }
+.window-content { padding: 8px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; background: var(--tycoon-bg); max-height: 350px;}
+.build-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #385045; border: 1px solid #203028; padding: 8px 4px; cursor: pointer; text-align: center; }
+.build-item:hover { background: #486055; border-color: #688878; }
+.build-item.selected { background: #225588; border-color: #6699cc; }
+.item-icon { font-size: 32px; margin-bottom: 4px; line-height: 1; }
+.item-name { font-size: 12px; color: #fff; text-shadow: 1px 1px 0 #000; word-break: keep-all; }
+.item-cost { font-size: 11px; color: var(--money-green); margin-top: 2px; }
+.item-cost.premium { color: #ffaa00; font-weight: bold; text-shadow: 0 0 2px #ff4400; } 
+.item-cost.ultra { color: #ff33ff; font-weight: bold; text-shadow: 0 0 3px #bb00bb; font-size: 12px; } 
+
+/* MODAL OVERLAYS & PANELS */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(3px); }
+.retro-modal-box { width: 90%; max-width: 520px; display: flex; flex-direction: column; border: 3px solid var(--tycoon-border-light); box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
+
+/* QUIZ STYLING */
+.quiz-header-bar { display: flex; justify-content: space-between; align-items: center; background: #203028; padding: 8px 12px; gap: 10px; flex-wrap: wrap; }
+.unit-select-dropdown { padding: 4px 8px; font-family: 'Galmuri9', sans-serif; font-size: 13px; background: #385045; color: #fff; border: 1px solid #688878; border-radius: 4px; cursor: pointer; outline: none; }
+.quiz-content { padding: 20px; background: #c0c0c0; color: #000; border-left: 2px solid #fff; border-top: 2px solid #fff; border-right: 2px solid #444; border-bottom: 2px solid #444; }
+.quiz-qno { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.quiz-type-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #225588; color: #fff; font-weight: normal; }
+.quiz-text { font-size: 18px; font-weight: bold; margin-bottom: 20px; line-height: 1.4; word-break: keep-all; }
+.quiz-options { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 15px; }
+.quiz-option { background: #e0e0e0; border-top: 2px solid #fff; border-left: 2px solid #fff; border-right: 2px solid #888; border-bottom: 2px solid #888; padding: 12px; font-size: 16px; cursor: pointer; font-family: inherit; color: #000; text-align: left; }
+.quiz-option:hover { background: #f0f0f0; }
+.quiz-option:active { border-top: 2px solid #888; border-left: 2px solid #888; border-right: 2px solid #fff; border-bottom: 2px solid #fff; padding-top: 14px; padding-left: 14px; }
+
+.short-answer-container { display: flex; gap: 8px; margin-bottom: 15px; }
+.short-answer-input { flex: 1; padding: 12px; font-family: 'Galmuri9', sans-serif; font-size: 16px; border: 2px solid #444; background: #fff; color: #000; user-select: text; -webkit-user-select: text; }
+.short-answer-submit { padding: 0 20px; font-size: 16px; font-weight: bold; background: #225588; color: #fff; border: 2px solid #6699cc; cursor: pointer; }
+
+.quiz-feedback { margin-top: 15px; padding: 12px; background: #fff; border: 1px inset #888; display: none; font-size: 14px; font-weight: bold; line-height: 1.4;}
+.btn-next-quiz { margin-top: 10px; width: 100%; padding: 12px; font-weight: bold; display: none; background: #228844; }
+
+/* HINT MODAL */
+.hint-content { padding: 20px; background: #fffae6; color: #000; border: 3px solid #ffcc00; border-radius: 8px; text-align: center; }
+.hint-title { font-size: 20px; font-weight: bold; color: #cc3300; margin-bottom: 15px; }
+.hint-text { font-size: 16px; margin-bottom: 20px; line-height: 1.5; word-break: keep-all; }
+.btn-close-hint { padding: 10px 20px; font-size: 16px; font-weight: bold; background: #ffcc00; border: 2px solid #cc9900; border-radius: 4px; cursor: pointer; }
+
+/* START / AUTH MODALS */
+.intro-box { width: 480px; text-align: center; line-height: 1.5; max-width: 95%; }
+.intro-title { font-size: 34px; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 0 #000; }
+.intro-sub-title { font-size: 16px; color: #ffdd44; font-weight: bold; margin-bottom: 15px; text-shadow: 1px 1px 0 #000; }
+.start-btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+.start-btn { font-size: 18px; padding: 14px; width: 100%; font-weight: bold; }
+.auth-input-group { display: flex; flex-direction: column; gap: 12px; margin: 15px 0; }
+.auth-input { width: 100%; padding: 12px; font-family: 'Galmuri9', sans-serif; font-size: 18px; text-align: center; border: 2px solid var(--tycoon-border-dark); background: #eee; color: #111; user-select: text; -webkit-user-select: text; }
+.auth-input:focus { outline: none; border-color: var(--money-green); background: #fff; }
+
+/* TEACHER DASHBOARD */
+.teacher-box { width: 95%; max-width: 750px; max-height: 90vh; display: flex; flex-direction: column; }
+.teacher-content { padding: 15px; background: #2b3a32; overflow-y: auto; color: #fff; display: flex; flex-direction: column; gap: 15px; }
+.teacher-card { background: var(--tycoon-bg); border: 2px solid var(--tycoon-border-light); padding: 15px; border-radius: 6px; }
+.teacher-card-title { font-size: 16px; font-weight: bold; color: #ffdd44; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.file-upload-area { border: 2px dashed #688878; padding: 20px; text-align: center; border-radius: 6px; cursor: pointer; background: rgba(0,0,0,0.2); }
+.file-upload-area:hover { border-color: var(--money-green); background: rgba(68, 255, 68, 0.05); }
+.questions-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+.questions-table th, .questions-table td { border: 1px solid #688878; padding: 6px 8px; text-align: left; }
+.questions-table th { background: #203028; color: #ffdd44; }
+
+/* OUTRO MODAL */
+.outro-box { width: 550px; max-width: 95%; background: linear-gradient(135deg, #1a2a22, #2b4a3a); border: 4px solid #facc15; box-shadow: 0 0 30px rgba(250, 204, 21, 0.3); border-radius: 15px; text-align: center; }
+.outro-title-fx { font-size: 30px; color: #fff; text-shadow: 0 0 10px #facc15, 2px 2px 0 #cc5500; margin-bottom: 10px; }
+.outro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
+.outro-card { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; border: 1px solid #688878; display: flex; flex-direction: column; align-items: center; }
+.outro-card-title { font-size: 12px; color: #cccccc; margin-bottom: 4px; }
+.outro-card-value { font-size: 20px; font-weight: bold; }
+
+@media (max-width: 600px) {
+    #build-window { width: 95%; right: 2.5%; bottom: 65px; max-height: 50vh; }
+    .hud-item { font-size: 13px; }
+    .quiz-text { font-size: 16px; }
+    .tool-btn { width: 42px; height: 42px; font-size: 16px; }
+    .intro-title, .outro-title-fx { font-size: 24px; }
+    .intro-sub-title { font-size: 14px; }
+    .outro-grid { grid-template-columns: 1fr; gap: 8px; }
+    .outro-card-value { font-size: 16px; }
+}
+#build-cursor-tip { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #ffcc00; padding: 8px 15px; border-radius: 15px; font-size: 13px; pointer-events: none; display: none; z-index: 10; text-align: center; border: 1px solid #ffcc00; }
+#toast-notification { position: fixed; top: 50px; left: 50%; transform: translateX(-50%); background: rgba(0, 50, 20, 0.9); color: #44ff44; border: 2px solid #44ff44; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; z-index: 300; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+.db-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-bottom: 10px; }
+.db-status-supabase { background: #10b981; color: #fff; }
+.db-status-local { background: #f59e0b; color: #fff; }
+</style>
+</head>
+<body>
+
+<div id="toast-notification">메시지</div>
+
+<!-- 1. START / MAIN MODAL -->
+<div id="main-menu-modal" class="modal-overlay" style="display: flex;">
+    <div class="retro-panel intro-box" style="padding: 25px; margin: 15px;">
+        <h1 class="intro-title">수학 코스터<br>타이쿤</h1>
+        <div class="intro-sub-title">[ Supabase & Vercel 수학 코스터 ]</div>
+        
+        <div id="db-status-indicator" class="db-status-badge db-status-local">
+            ⚡ DB 상태: Local IndexedDB 사용 중
+        </div>
+
+        <p style="font-size: 13px; color: #ffaa44; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; margin-bottom: 15px; line-height: 1.4;">
+            💡 <b>게임 안내</b><br>
+            수학 문제를 풀어 자금을 모으고 최고의 놀이공원을 만드세요!<br>
+            교사 대시보드에서 Supabase DB 연결 및 CSV 문제를 설정할 수 있습니다.
+        </p>
+
+        <label style="color: #fff; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 15px; background: #333; padding: 6px 12px; border-radius: 6px;">
+            <input type="checkbox" id="low-spec-toggle" style="width: 16px; height: 16px;">
+            <span>저사양 모드 켜기 (학교 구형 PC용)</span>
+        </label>
+        <div class="start-btn-group">
+            <button class="retro-button start-btn" style="background: #228844;" onclick="openAuthModal('new')">🎮 새로 시작하기</button>
+            <button class="retro-button start-btn" style="background: #225588;" onclick="openAuthModal('load')">📂 이어하기 (저장된 게임)</button>
+            <button class="retro-button start-btn" style="background: #885522;" onclick="openTeacherDashboard()">👩‍🏫 교사 대시보드 (DB 및 문제 관리)</button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. AUTH / SAVE SELECTION MODAL -->
+<div id="auth-modal" class="modal-overlay">
+    <div class="retro-panel intro-box" style="padding: 25px; margin: 15px;">
+        <h1 class="intro-title" id="auth-title">로그인</h1>
+        <p class="intro-sub-title" id="auth-subtitle">닉네임과 비밀번호를 입력해주세요.</p>
+        
+        <div class="auth-input-group">
+            <input type="text" id="input-nickname" class="auth-input" placeholder="닉네임 (예: 수학대장)" maxlength="12">
+            <input type="password" id="input-password" class="auth-input" placeholder="비밀번호 (4자리 이상)" maxlength="20">
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="retro-button start-btn" style="flex: 1; background: #228844;" id="btn-auth-confirm" onclick="submitAuth()">확인 및 시작</button>
+            <button class="retro-button start-btn" style="flex: 1; background: #666666;" onclick="closeAuthModal()">취소</button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. TEACHER DASHBOARD MODAL -->
+<div id="teacher-modal" class="modal-overlay">
+    <div class="retro-panel teacher-box">
+        <div class="window-titlebar">
+            <span>👩‍🏫 교사 대시보드 (Supabase DB 및 CSV 문제 관리)</span>
+            <div class="close-btn" onclick="closeTeacherDashboard()">X</div>
+        </div>
+        <div class="teacher-content">
+            <!-- SUPABASE CONFIGURATION CARD -->
+            <div class="teacher-card" style="border-color: #3ecf8e;">
+                <div class="teacher-card-title" style="color: #3ecf8e;">
+                    ⚡ Supabase 클라우드 데이터베이스 설정
+                </div>
+                <p style="font-size: 11px; color: #ccc; margin-bottom: 8px;">
+                    Supabase 프로젝트 URL과 Anon Key를 입력하여 클라우드 DB와 실시간 연결할 수 있습니다. (미입력 시 브라우저 내 로컬 DB 작동)
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
+                    <input type="text" id="supabase-url-input" class="auth-input" style="font-size: 12px; text-align: left; padding: 8px;" placeholder="Supabase Project URL (https://xyz.supabase.co)">
+                    <input type="password" id="supabase-key-input" class="auth-input" style="font-size: 12px; text-align: left; padding: 8px;" placeholder="Supabase Anon Key (eyJhbGciOi...)">
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="retro-button" style="padding: 6px 12px; background: #10b981; font-size: 12px;" onclick="saveSupabaseConfig()">⚡ Supabase 연결 저장 및 테스트</button>
+                    <button class="retro-button" style="padding: 6px 12px; background: #666; font-size: 12px;" onclick="clearSupabaseConfig()">로컬 DB 모드로 전환</button>
+                </div>
+            </div>
+
+            <div class="teacher-card">
+                <div class="teacher-card-title">📥 1. 문제 작성용 CSV 기본 포맷 양식 다운로드</div>
+                <p style="font-size: 12px; color: #ddd; margin-bottom: 10px;">
+                    엑셀(Excel)이나 한글에서 수정 가능한 CSV 양식을 다운로드합니다.
+                </p>
+                <button class="retro-button" style="padding: 8px 16px; background: #225588; font-size: 13px; font-weight: bold;" onclick="downloadSampleCSV()">
+                    📄 기본 CSV 양식 다운로드 (.csv)
+                </button>
+            </div>
+
+            <div class="teacher-card">
+                <div class="teacher-card-title">📤 2. CSV 파일 업로드 (DB 저장)</div>
+                <div class="file-upload-area" onclick="document.getElementById('csv-file-input').click()">
+                    <span style="font-size: 24px;">📁</span><br>
+                    <span style="font-size: 13px; font-weight: bold;">클릭하여 작성한 CSV 파일 선택</span><br>
+                    <span style="font-size: 11px; color: #aaa;">(객관식 선택지는 세미콜론 ';' 으로 구분)</span>
+                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
+                </div>
+            </div>
+
+            <div class="teacher-card">
+                <div class="teacher-card-title" style="justify-content: space-between;">
+                    <span>📚 3. 현재 등록된 문제 목록</span>
+                    <button class="retro-button" style="padding: 4px 10px; background: #882222; font-size: 11px;" onclick="resetDefaultQuestions()">
+                        🔄 기본 문제로 초기화
+                    </button>
+                </div>
+                <div id="questions-summary-list" style="max-height: 180px; overflow-y: auto;"></div>
+            </div>
+            
+            <button class="retro-button" style="padding: 12px; background: #444; width: 100%; font-weight: bold;" onclick="closeTeacherDashboard()">닫기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 4. QUIZ MODAL WITH UNIT SELECTION -->
+<div id="quiz-modal-overlay" class="modal-overlay">
+    <div id="quiz-modal" class="retro-panel retro-modal-box">
+        <div class="quiz-header-bar">
+            <span style="font-weight: bold; font-size: 14px; color: #ffdd44;">📝 연구 과제 (문제 풀기)</span>
+            <select id="quiz-unit-select" class="unit-select-dropdown" onchange="onUnitChange()"></select>
+        </div>
+        <div class="quiz-content">
+            <div class="quiz-qno">
+                <span id="quiz-no">문제 1 / 10</span>
+                <span id="quiz-type-tag" class="quiz-type-tag">객관식</span>
+            </div>
+            <div class="quiz-text" id="quiz-text">문제 내용이 여기에 표시됩니다.</div>
+            
+            <!-- Choice Options -->
+            <div class="quiz-options" id="quiz-options"></div>
+            
+            <!-- Short Answer Input -->
+            <div class="short-answer-container" id="short-answer-box" style="display: none;">
+                <input type="text" id="short-answer-input" class="short-answer-input" placeholder="정답을 입력하세요 (예: 53mm 또는 53)">
+                <button class="short-answer-submit" onclick="submitShortAnswer()">제출</button>
+            </div>
+
+            <div class="quiz-feedback" id="quiz-feedback"></div>
+            <button class="retro-button btn-next-quiz" id="btn-next-quiz" onclick="nextQuiz()">자금 수령 및 닫기</button>
+        </div>
+    </div>
+</div>
+
+<!-- HINT MODAL -->
+<div id="hint-modal-overlay" class="modal-overlay" style="z-index: 150;">
+    <div id="hint-modal" style="width: 90%; max-width: 400px;">
+        <div class="hint-content">
+            <div class="hint-title">💡 힌트</div>
+            <div class="hint-text" id="hint-text">힌트 내용</div>
+            <button class="btn-close-hint" onclick="closeHintModal()">다시 풀어보기</button>
+        </div>
+    </div>
+</div>
+
+<!-- OUTRO MODAL -->
+<div id="outro-modal" class="modal-overlay" style="z-index: 200;">
+    <div class="retro-panel outro-box" style="padding: 25px; margin: 15px;">
+        <h1 class="outro-title-fx">🎉 위대한 경영자 등극! 🎉</h1>
+        <p style="font-size: 13px; line-height: 1.4; color: #eee; margin-bottom: 10px;">
+            선택한 단원의 모든 수학 문제를 완벽하게 풀었습니다!<br>성공적인 공원 경영을 축하합니다.
+        </p>
+        <div class="outro-grid">
+            <div class="outro-card"><div class="outro-card-title">👑 최고 경영자</div><div class="outro-card-value" id="outro-name" style="color: #ffffff;">원장님</div></div>
+            <div class="outro-card"><div class="outro-card-title">⏱️ 플레이 시간</div><div class="outro-card-value" id="outro-time" style="color: #ffffff;">0분 0초</div></div>
+            <div class="outro-card"><div class="outro-card-title">💯 연구 정답률</div><div class="outro-card-value" id="outro-score" style="color: #44aaff;">100%</div></div>
+            <div class="outro-card"><div class="outro-card-title">🎯 단번에 맞춘 문제</div><div class="outro-card-value" id="outro-first-try" style="color: #ff88ff;">0 개</div></div>
+            <div class="outro-card"><div class="outro-card-title">🚶 현재 유치한 손님 수</div><div class="outro-card-value" id="outro-guests" style="color: #ffaa44;">0 명</div></div>
+            <div class="outro-card"><div class="outro-card-title">💰 최종 확보 자금</div><div class="outro-card-value" id="outro-money" style="color: var(--money-green);">₩ 0</div></div>
+        </div>
+        <button class="retro-button start-btn" onclick="continueGame()" style="background: #225588; border-color: #6699cc;">계속해서 공원 꾸미기</button>
+    </div>
+</div>
+
+<!-- GAME CANVAS & HUD -->
+<div id="game-container"><canvas id="gameCanvas"></canvas></div>
+<div id="top-hud">
+    <div class="hud-item" title="방문객 수"><div class="hud-icon">🚶</div><span id="guest-count">0</span>명<span id="entrance-warning">⚠️ 입구를 건설하세요!</span></div>
+    <div class="hud-item" title="자금"><div class="hud-icon">💰</div><span id="money-count" class="hud-money">₩ 5,000</span></div>
+    <div class="hud-item" title="공원 가치"><div class="hud-icon">⭐</div><span id="rating-count">0</span></div>
+    <button class="retro-button" style="margin-left: auto; padding: 4px 10px; font-size: 12px; background: #228844;" onclick="manualSaveGame()">💾 저장하기</button>
+</div>
+
+<div id="bgm-panel">
+    <button class="retro-button" id="bgm-play-btn" onclick="toggleBGM()" style="padding:4px 8px; font-size:12px;">🎵 BGM 재생</button>
+    <button class="retro-button" onclick="nextBGM()" style="padding:4px 8px; font-size:12px;">⏭ 다음 곡</button>
+    <span id="bgm-track-info" style="color:#ffcc00; font-size:12px; text-shadow:1px 1px 0 #000; font-weight:bold;">Track 1/5</span>
+    <audio id="bgm-audio" loop crossorigin="anonymous"></audio>
+</div>
+
+<div id="build-cursor-tip">건설할 위치를 클릭하세요<br>(취소: 빈 곳 우클릭 또는 도구모음 재클릭)</div>
+<button id="quiz-trigger-btn" class="retro-button" onclick="openQuiz()">📝 연구기금 (문제풀기)</button>
+
+<div id="bottom-toolbar">
+    <button class="retro-button tool-btn" onclick="toggleBuildWindow('facility')" title="시설 (입구 등)">🏢<span>시설</span></button>
+    <button class="retro-button tool-btn" onclick="toggleBuildWindow('path')" title="보도">🛤️<span>보도</span></button>
+    <button class="retro-button tool-btn" onclick="toggleBuildWindow('ride')" title="놀이기구">🎢<span>기구</span></button>
+    <button class="retro-button tool-btn" onclick="toggleBuildWindow('shop')" title="상점">🍔<span>상점</span></button>
+    <button class="retro-button tool-btn" onclick="toggleBuildWindow('scenery')" title="조경">🌳<span>조경</span></button>
+    <button class="retro-button tool-btn" id="btn-demolish" onclick="toggleDemolishMode()" title="철거">🧨<span>철거</span></button>
+</div>
+
+<div id="build-window" class="retro-panel">
+    <div class="window-titlebar"><span id="build-window-title">건설 메뉴</span><div class="close-btn" onclick="closeBuildWindow()">X</div></div>
+    <div class="window-content" id="build-catalog"></div>
+</div>
+
+<script>
+/* ==========================================================================
+   1. HYBRID DATABASE LAYER (SUPABASE + INDEXEDDB FALLBACK)
+   ========================================================================== */
+let supabaseClient = null;
+let useSupabase = false;
+
+const DB_NAME = 'RollercoasterTycoonDB';
+const DB_VERSION = 1;
+let localDb = null;
+
+// Initialize Supabase Client if credentials exist
+function initSupabaseClient() {
+    const url = localStorage.getItem('RTC_SUPABASE_URL') || '';
+    const key = localStorage.getItem('RTC_SUPABASE_KEY') || '';
+    
+    if (url && key && window.supabase) {
+        try {
+            supabaseClient = window.supabase.createClient(url, key);
+            useSupabase = true;
+            updateDBStatusUI(true);
+            console.log("⚡ Supabase Client initialized.");
+            return true;
+        } catch (e) {
+            console.error("Supabase init error:", e);
+        }
+    }
+    useSupabase = false;
+    updateDBStatusUI(false);
+    return false;
+}
+
+function updateDBStatusUI(isSupabase) {
+    const indicator = document.getElementById('db-status-indicator');
+    if (!indicator) return;
+    if (isSupabase) {
+        indicator.className = "db-status-badge db-status-supabase";
+        indicator.innerText = "⚡ DB 상태: Supabase 클라우드 연결됨";
+    } else {
+        indicator.className = "db-status-badge db-status-local";
+        indicator.innerText = "⚡ DB 상태: Local IndexedDB 사용 중";
+    }
+}
+
+function saveSupabaseConfig() {
+    const url = document.getElementById('supabase-url-input').value.trim();
+    const key = document.getElementById('supabase-key-input').value.trim();
+    if (!url || !key) {
+        alert("Supabase URL과 Key를 모두 입력해주세요.");
+        return;
+    }
+    localStorage.setItem('RTC_SUPABASE_URL', url);
+    localStorage.setItem('RTC_SUPABASE_KEY', key);
+    if (initSupabaseClient()) {
+        showToast("⚡ Supabase 클라우드 데이터베이스에 연결되었습니다!");
+    } else {
+        alert("Supabase 연결 실패. URL 및 Key를 다시 확인해주세요.");
+    }
+}
+
+function clearSupabaseConfig() {
+    localStorage.removeItem('RTC_SUPABASE_URL');
+    localStorage.removeItem('RTC_SUPABASE_KEY');
+    supabaseClient = null;
+    useSupabase = false;
+    updateDBStatusUI(false);
+    showToast("로컬 IndexedDB 모드로 전환되었습니다.");
+}
+
+function initDB() {
+    initSupabaseClient();
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = (e) => { console.error("IndexedDB error:", e); reject(e); };
+        request.onsuccess = (e) => {
+            localDb = e.target.result;
+            seedDefaultQuestions().then(resolve);
+        };
+        request.onupgradeneeded = (e) => {
+            localDb = e.target.result;
+            if (!localDb.objectStoreNames.contains('saves')) {
+                localDb.createObjectStore('saves', { keyPath: 'nickname' });
+            }
+            if (!localDb.objectStoreNames.contains('questions')) {
+                localDb.createObjectStore('questions', { keyPath: 'id', autoIncrement: true });
+            }
+        };
+    });
+}
+
+// DEFAULT 20 QUESTIONS FOR INITIAL SEED
+const DEFAULT_QUESTIONS = [
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이를 무엇이라고 하나요?", options: ["1 mm", "1 m", "1 km", "10 mm"], answer: "1 mm", explanation: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이는 1mm입니다.", hint: "자에 있는 가장 작은 눈금입니다." },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "5cm 3mm는 몇 mm일까요?", options: ["53 mm", "35 mm", "503 mm", "8 mm"], answer: "53 mm", explanation: "1cm는 10mm입니다. 5cm는 50mm이므로 53mm입니다.", hint: "1cm = 10mm" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "1000m를 하나로 묶어서 나타내는 단위는 무엇일까요?", options: ["1 km", "10 km", "100 cm", "10 mm"], answer: "1 km", explanation: "1000m는 1km(킬로미터)라고 씁니다.", hint: "아주 먼 거리를 나타내는 단위입니다." },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "2km 400m는 몇 m일까요? (숫자만 입력 가능)", options: [], answer: "2400", explanation: "1km는 1000m입니다. 2km는 2000m이므로 2400m입니다.", hint: "1km = 1000m" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "3500m는 몇 km 몇 m일까요?", options: ["3km 500m", "35km", "3km 50m", "5km 300m"], answer: "3km 500m", explanation: "3000m는 3km이므로 3km 500m입니다.", hint: "1000m마다 1km입니다." },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "시계의 초침이 한 바퀴를 도는 시간인 '1분'은 몇 초일까요?", options: [], answer: "60초", explanation: "초침이 한 바퀴 도는 시간은 60초입니다.", hint: "60초 = 1분" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "80초는 몇 분 몇 초일까요?", options: ["1분 20초", "1분 0초", "2분 20초", "8분"], answer: "1분 20초", explanation: "80초에서 60초(1분)를 빼면 20초가 남으므로 1분 20초입니다.", hint: "80 - 60 = 20" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "1분 30초는 모두 몇 초일까요?", options: [], answer: "90초", explanation: "1분은 60초입니다. 60 + 30 = 90초입니다.", hint: "60 + 30" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "시간의 덧셈을 해봅시다. 2시간 10분 + 1시간 20분은?", options: ["3시간 30분", "3시간 10분", "4시간 30분", "2시간 30분"], answer: "3시간 30분", explanation: "2+1=3시간, 10+20=30분입니다.", hint: "시간은 시간끼리, 분은 분끼리 더합니다." },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "30분 40초 + 10분 30초는 얼마일까요?", options: ["41분 10초", "40분 70초", "41분 30초", "40분 10초"], answer: "41분 10초", explanation: "40+30=70초(1분 10초)이므로 41분 10초입니다.", hint: "60초마다 1분 올려줍니다." }
+];
+
+function seedDefaultQuestions() {
+    return new Promise((resolve) => {
+        const tx = localDb.transaction('questions', 'readonly');
+        const store = tx.objectStore('questions');
+        const countReq = store.count();
+        countReq.onsuccess = () => {
+            if (countReq.result === 0) {
+                const writeTx = localDb.transaction('questions', 'readwrite');
+                const writeStore = writeTx.objectStore('questions');
+                DEFAULT_QUESTIONS.forEach(q => writeStore.add(q));
+                writeTx.oncomplete = () => resolve();
+            } else {
+                resolve();
+            }
+        };
+    });
+}
+
+// HYBRID DATA WRAPPERS
+async function dbSaveUserData(nickname, password, gameData) {
+    if (useSupabase && supabaseClient) {
+        try {
+            const { error } = await supabaseClient
+                .from('game_saves')
+                .upsert({
+                    nickname: nickname,
+                    password: password,
+                    game_data: gameData,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'nickname' });
+            if (error) throw error;
+            console.log("Saved to Supabase:", nickname);
+            return;
+        } catch (err) {
+            console.error("Supabase Save Failed, falling back to LocalIndexedDB:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
+    return new Promise((resolve, reject) => {
+        const tx = localDb.transaction('saves', 'readwrite');
+        const store = tx.objectStore('saves');
+        const req = store.put({ nickname, password, updatedAt: Date.now(), gameData });
+        req.onsuccess = () => resolve();
+        req.onerror = (e) => reject(e);
+    });
+}
+
+async function dbGetUserData(nickname) {
+    if (useSupabase && supabaseClient) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('game_saves')
+                .select('*')
+                .eq('nickname', nickname)
+                .single();
+            if (error && error.code !== 'PGRST116') throw error; // PGRST116 is no rows
+            if (data) {
+                return { nickname: data.nickname, password: data.password, gameData: data.game_data };
+            }
+        } catch (err) {
+            console.error("Supabase Read Failed, falling back to LocalIndexedDB:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
+    return new Promise((resolve, reject) => {
+        const tx = localDb.transaction('saves', 'readonly');
+        const store = tx.objectStore('saves');
+        const req = store.get(nickname);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = (e) => reject(e);
+    });
+}
+
+async function dbGetAllQuestions() {
+    if (useSupabase && supabaseClient) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('quiz_questions')
+                .select('*');
+            if (error) throw error;
+            if (data && data.length > 0) {
+                return data.map(q => ({
+                    id: q.id,
+                    unit: q.unit,
+                    type: q.type,
+                    q: q.question,
+                    options: q.options || [],
+                    answer: q.answer,
+                    explanation: q.explanation,
+                    hint: q.hint,
+                    isCustom: q.is_custom
+                }));
+            }
+        } catch (err) {
+            console.error("Supabase Questions Fetch Failed, falling back to LocalIndexedDB:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
+    return new Promise((resolve, reject) => {
+        const tx = localDb.transaction('questions', 'readonly');
+        const store = tx.objectStore('questions');
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = (e) => reject(e);
+    });
+}
+
+async function dbAddQuestions(questionsArray) {
+    if (useSupabase && supabaseClient) {
+        try {
+            const rows = questionsArray.map(q => ({
+                unit: q.unit,
+                type: q.type,
+                question: q.q,
+                options: q.options || [],
+                answer: q.answer,
+                explanation: q.explanation,
+                hint: q.hint,
+                is_custom: true
+            }));
+            const { error } = await supabaseClient
+                .from('quiz_questions')
+                .insert(rows);
+            if (error) throw error;
+            return;
+        } catch (err) {
+            console.error("Supabase Insert Questions Failed, falling back to LocalIndexedDB:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
+    return new Promise((resolve, reject) => {
+        const tx = localDb.transaction('questions', 'readwrite');
+        const store = tx.objectStore('questions');
+        questionsArray.forEach(q => store.add(q));
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e);
+    });
+}
+
+async function dbResetQuestions() {
+    if (useSupabase && supabaseClient) {
+        try {
+            await supabaseClient.from('quiz_questions').delete().eq('is_custom', true);
+            return;
+        } catch (err) {
+            console.error("Supabase Reset Questions Failed:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
+    return new Promise((resolve, reject) => {
+        const tx = localDb.transaction('questions', 'readwrite');
+        const store = tx.objectStore('questions');
+        const clearReq = store.clear();
+        clearReq.onsuccess = () => {
+            DEFAULT_QUESTIONS.forEach(q => store.add(q));
+            tx.oncomplete = () => resolve();
+        };
+        tx.onerror = (e) => reject(e);
+    });
+}
+
+/* ==========================================================================
+   2. UI HELPER & TOAST NOTIFICATIONS
+   ========================================================================== */
+function showToast(message) {
+    const toast = document.getElementById('toast-notification');
+    toast.innerText = message;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 2500);
+}
+
+/* ==========================================================================
+   3. AUTH & START ENGINE
+   ========================================================================== */
+let authMode = 'new';
+let currentNickname = '';
+let currentPassword = '';
+
+function openAuthModal(mode) {
+    authMode = mode;
+    document.getElementById('input-nickname').value = '';
+    document.getElementById('input-password').value = '';
+    
+    if (mode === 'new') {
+        document.getElementById('auth-title').innerText = '🎮 새로 시작하기';
+        document.getElementById('auth-subtitle').innerText = '경영자 닉네임과 비밀번호를 설정하세요.';
+        document.getElementById('btn-auth-confirm').innerText = '공원 개장하기';
+    } else {
+        document.getElementById('auth-title').innerText = '📂 이어하기';
+        document.getElementById('auth-subtitle').innerText = '저장할 때 입력했던 닉네임과 비밀번호를 입력하세요.';
+        document.getElementById('btn-auth-confirm').innerText = '데이터 불러오기';
+    }
+    
+    document.getElementById('main-menu-modal').style.display = 'none';
+    document.getElementById('auth-modal').style.display = 'flex';
+}
+
+function closeAuthModal() {
+    document.getElementById('auth-modal').style.display = 'none';
+    document.getElementById('main-menu-modal').style.display = 'flex';
+}
+
+async function submitAuth() {
+    const nickname = document.getElementById('input-nickname').value.trim();
+    const password = document.getElementById('input-password').value.trim();
+    
+    if (!nickname || !password) {
+        alert("닉네임과 비밀번호를 모두 입력해주세요.");
+        return;
+    }
+    
+    try {
+        const existingSave = await dbGetUserData(nickname);
+        
+        if (authMode === 'new') {
+            if (existingSave) {
+                if (!confirm(`'${nickname}' 닉네임의 저장 데이터가 이미 존재합니다. 덮어쓰고 새로 시작하시겠습니까?`)) {
+                    return;
+                }
+            }
+            currentNickname = nickname;
+            currentPassword = password;
+            playerName = nickname;
+            isLowSpec = document.getElementById('low-spec-toggle').checked;
+            
+            resetGameVariables();
+            await saveCurrentGameData();
+            document.getElementById('auth-modal').style.display = 'none';
+            startGame();
+            showToast(`✨ '${nickname}' 원장님의 공원이 새로 개장되었습니다!`);
+            
+        } else { // 'load'
+            if (!existingSave) {
+                alert(`'${nickname}' 닉네임으로 저장된 데이터를 찾을 수 없습니다.`);
+                return;
+            }
+            if (existingSave.password !== password) {
+                alert("비밀번호가 일치하지 않습니다. 다시 확인해주세요.");
+                return;
+            }
+            
+            currentNickname = nickname;
+            currentPassword = password;
+            playerName = nickname;
+            isLowSpec = document.getElementById('low-spec-toggle').checked;
+            
+            restoreGameData(existingSave.gameData);
+            document.getElementById('auth-modal').style.display = 'none';
+            startGame();
+            showToast(`📂 '${nickname}' 원장님의 공원을 성공적으로 불러왔습니다!`);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("데이터 처리 중 오류가 발생했습니다.");
+    }
+}
+
+/* ==========================================================================
+   4. GAME STATE SAVE / LOAD ENGINE
+   ========================================================================== */
+function serializeGameData() {
+    let gridMapState = [];
+    for(let r=0; r<GRID_SIZE; r++) {
+        gridMapState[r] = [];
+        for(let c=0; c<GRID_SIZE; c++) {
+            const tile = gridMap[r][c];
+            gridMapState[r][c] = {
+                type: tile.type,
+                itemId: tile.item ? tile.item.id : null
+            };
+        }
+    }
+    
+    let entitiesState = entities.map(e => ({
+        r: e.r,
+        c: e.c,
+        itemId: e.item.id
+    }));
+    
+    return {
+        money: money,
+        rating: rating,
+        incomePerTick: incomePerTick,
+        parkEntranceBuilt: parkEntranceBuilt,
+        entrancePos: entrancePos,
+        firstTryCount: firstTryCount,
+        solvedCount: currentQuestionIndex,
+        gridMapState: gridMapState,
+        entitiesState: entitiesState,
+        savedTime: Date.now()
+    };
+}
+
+function restoreGameData(data) {
+    if (!data) return;
+    money = data.money !== undefined ? data.money : 5000;
+    rating = data.rating || 0;
+    incomePerTick = data.incomePerTick || 0;
+    parkEntranceBuilt = data.parkEntranceBuilt || false;
+    entrancePos = data.entrancePos || null;
+    firstTryCount = data.firstTryCount || 0;
+    currentQuestionIndex = data.solvedCount || 0;
+    
+    entities = [];
+    for(let r=0; r<GRID_SIZE; r++) {
+        for(let c=0; c<GRID_SIZE; c++) {
+            const isDark = (r+c)%2 === 0;
+            gridMap[r][c] = { type: 'grass', color: isDark ? '#4c8a41' : '#457e3a', obj: null };
+        }
+    }
+    
+    const catalogLookup = {};
+    Object.keys(CATALOG).forEach(cat => {
+        CATALOG[cat].forEach(item => catalogLookup[item.id] = item);
+    });
+    
+    if (data.entitiesState) {
+        data.entitiesState.forEach(es => {
+            const item = catalogLookup[es.itemId];
+            if (item) {
+                const newObj = { r: es.r, c: es.c, item: item, queue: [] };
+                entities.push(newObj);
+                for(let ir = es.r; ir < es.r + item.size; ir++) {
+                    for(let ic = es.c; ic < es.c + item.size; ic++) {
+                        if (gridMap[ir] && gridMap[ir][ic]) {
+                            gridMap[ir][ic].obj = newObj;
+                            if(item.type === 'path') {
+                                gridMap[ir][ic].type = 'path';
+                                gridMap[ir][ic].item = item;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    updateTopHUD();
+    if(parkEntranceBuilt) {
+        document.getElementById('entrance-warning').style.display = 'none';
+    } else {
+        document.getElementById('entrance-warning').style.display = 'inline-block';
+    }
+}
+
+async function saveCurrentGameData() {
+    if (!currentNickname) return;
+    const gameData = serializeGameData();
+    await dbSaveUserData(currentNickname, currentPassword, gameData);
+}
+
+async function manualSaveGame() {
+    if (!currentNickname) {
+        showToast("⚠️ 먼저 게임을 시작해주세요.");
+        return;
+    }
+    await saveCurrentGameData();
+    showToast("💾 게임 진행 상황이 안전하게 저장되었습니다!");
+}
+
+function resetGameVariables() {
+    money = 5000;
+    incomePerTick = 0;
+    rating = 0;
+    parkEntranceBuilt = false;
+    entrancePos = null;
+    currentQuestionIndex = 0;
+    firstTryCount = 0;
+    entities = [];
+    guestsList = [];
+    for(let r=0; r<GRID_SIZE; r++){
+        for(let c=0; c<GRID_SIZE; c++){
+            const isDark = (r+c)%2 === 0;
+            gridMap[r][c] = { type: 'grass', color: isDark ? '#4c8a41' : '#457e3a', obj: null };
+        }
+    }
+    updateTopHUD();
+}
+
+/* ==========================================================================
+   5. TEACHER DASHBOARD & CSV SYSTEM
+   ========================================================================== */
+async function openTeacherDashboard() {
+    document.getElementById('main-menu-modal').style.display = 'none';
+    document.getElementById('teacher-modal').style.display = 'flex';
+    
+    // Fill Supabase Inputs
+    document.getElementById('supabase-url-input').value = localStorage.getItem('RTC_SUPABASE_URL') || '';
+    document.getElementById('supabase-key-input').value = localStorage.getItem('RTC_SUPABASE_KEY') || '';
+    
+    await renderQuestionsSummaryTable();
+}
+
+function closeTeacherDashboard() {
+    document.getElementById('teacher-modal').style.display = 'none';
+    document.getElementById('main-menu-modal').style.display = 'flex';
+}
+
+async function renderQuestionsSummaryTable() {
+    const questions = await dbGetAllQuestions();
+    const container = document.getElementById('questions-summary-list');
+    
+    if (!questions || questions.length === 0) {
+        container.innerHTML = '<p style="font-size:12px; color:#aaa;">등록된 문제가 없습니다.</p>';
+        return;
+    }
+    
+    const unitGroups = {};
+    questions.forEach(q => {
+        const u = q.unit || "기타 단원";
+        if (!unitGroups[u]) unitGroups[u] = { choice: 0, short: 0, total: 0 };
+        if (q.type === 'short') unitGroups[u].short++;
+        else unitGroups[u].choice++;
+        unitGroups[u].total++;
+    });
+    
+    let html = `<table class="questions-table">
+        <thead>
+            <tr>
+                <th>단원명</th>
+                <th>객관식</th>
+                <th>주관식</th>
+                <th>총 문제 수</th>
+            </tr>
+        </thead>
+        <tbody>`;
+        
+    Object.keys(unitGroups).forEach(unit => {
+        const g = unitGroups[unit];
+        html += `<tr>
+            <td>${unit}</td>
+            <td>${g.choice}개</td>
+            <td>${g.short}개</td>
+            <td><b>${g.total}개</b></td>
+        </tr>`;
+    });
+    
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function downloadSampleCSV() {
+    const csvContent = "\uFEFF단원,유형,문제,선택지,정답,해설,힌트\n" +
+        "3학년 1학기 5단원 길이와 시간,객관식,1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이는?,1 mm;1 m;1 km;10 mm,1 mm,1cm를 10칸으로 나누면 1mm입니다.,자를 보세요.\n" +
+        "3학년 1학기 5단원 길이와 시간,주관식,5cm 3mm는 몇 mm일까요?,; ; ;,53 mm,1cm=10mm이므로 50mm+3mm=53mm입니다.,1cm = 10mm\n" +
+        "3학년 1학기 1단원 덧셈과 뺄셈,객관식,120 + 350의 값은 얼마일까요?,470;450;500;370,470,120 더하기 350은 470입니다.,백의 자리부터 더해보세요.\n" +
+        "3학년 1학기 1단원 덧셈과 뺄셈,주관식,500 - 150의 값은 얼마일까요?,; ; ;,350,500 빼기 150은 350입니다.,50 - 15 = ?";
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'MATH_QUIZ_TEMPLATE.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("📄 CSV 양식 파일이 다운로드 되었습니다.");
+}
+
+function handleCSVUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const text = e.target.result;
+        try {
+            const parsedQuestions = parseCSV(text);
+            if (parsedQuestions.length === 0) {
+                alert("업로드한 CSV 파일에서 올바른 문제를 찾을 수 없습니다. 양식을 확인해주세요.");
+                return;
+            }
+            await dbAddQuestions(parsedQuestions);
+            alert(`🎉 총 ${parsedQuestions.length}개의 새로운 문제가 DB에 등록되었습니다!`);
+            await renderQuestionsSummaryTable();
+        } catch (err) {
+            console.error(err);
+            alert("CSV 파일 해석 중 오류가 발생했습니다: " + err.message);
+        }
+    };
+    reader.readAsText(file, 'UTF-8');
+    event.target.value = '';
+}
+
+function parseCSV(text) {
+    const lines = text.split(/\r\n|\n/);
+    const questions = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        const cols = [];
+        let inQuotes = false;
+        let token = '';
+        
+        for (let c = 0; c < line.length; c++) {
+            const char = line[c];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                cols.push(token.trim());
+                token = '';
+            } else {
+                token += char;
+            }
+        }
+        cols.push(token.trim());
+        
+        if (cols.length >= 5) {
+            const unit = cols[0] || "자율 문제";
+            const rawType = cols[1] || "객관식";
+            const type = (rawType.includes("주관식") || rawType.toLowerCase() === "short") ? "short" : "choice";
+            const q = cols[2];
+            const rawOptions = cols[3] || "";
+            const answer = cols[4];
+            const explanation = cols[5] || "";
+            const hint = cols[6] || "";
+            
+            let options = [];
+            if (type === 'choice' && rawOptions) {
+                options = rawOptions.split(';').map(o => o.trim()).filter(o => o.length > 0);
+            }
+            
+            if (q && answer) {
+                questions.push({
+                    unit: unit,
+                    type: type,
+                    q: q,
+                    options: options,
+                    answer: answer,
+                    explanation: explanation,
+                    hint: hint,
+                    isCustom: true
+                });
+            }
+        }
+    }
+    return questions;
+}
+
+async function resetDefaultQuestions() {
+    if (confirm("정말로 모든 추가 문제를 삭제하고 기본 문제로 초기화하시겠습니까?")) {
+        await dbResetQuestions();
+        await renderQuestionsSummaryTable();
+        showToast("🔄 기본 문제로 초기화되었습니다.");
+    }
+}
+
+/* ==========================================================================
+   6. QUIZ ENGINE WITH UNIT SELECTION & SHORT ANSWER SUPPORT
+   ========================================================================== */
+let activeQuestions = [];
+let currentUnit = '전체 단원';
+
+async function openQuiz() {
+    const allQuestions = await dbGetAllQuestions();
+    if (!allQuestions || allQuestions.length === 0) {
+        alert("등록된 퀴즈 문제가 없습니다.");
+        return;
+    }
+    
+    const units = ['전체 단원', ...new Set(allQuestions.map(q => q.unit))];
+    const select = document.getElementById('quiz-unit-select');
+    select.innerHTML = '';
+    units.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u;
+        opt.innerText = u;
+        if (u === currentUnit) opt.selected = true;
+        select.appendChild(opt);
+    });
+    
+    filterQuestionsByUnit(allQuestions);
+}
+
+function onUnitChange() {
+    currentUnit = document.getElementById('quiz-unit-select').value;
+    dbGetAllQuestions().then(filterQuestionsByUnit);
+}
+
+function filterQuestionsByUnit(allQuestions) {
+    if (currentUnit === '전체 단원') {
+        activeQuestions = [...allQuestions];
+    } else {
+        activeQuestions = allQuestions.filter(q => q.unit === currentUnit);
+    }
+    
+    if (activeQuestions.length === 0) {
+        alert("선택한 단원에 문제가 없습니다.");
+        return;
+    }
+    
+    shuffledQuestions = [...activeQuestions].sort(() => Math.random() - 0.5);
+    currentQuestionIndex = 0;
+    renderCurrentQuiz();
+    document.getElementById('quiz-modal-overlay').style.display = 'flex';
+}
+
+function renderCurrentQuiz() {
+    if (currentQuestionIndex >= shuffledQuestions.length) {
+        showOutroModal();
+        document.getElementById('quiz-modal-overlay').style.display = 'none';
+        return;
+    }
+    
+    isFirstTry = true;
+    const qData = shuffledQuestions[currentQuestionIndex];
+    
+    document.getElementById('quiz-no').innerText = `문제 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+    document.getElementById('quiz-type-tag').innerText = qData.type === 'short' ? '주관식' : '객관식';
+    document.getElementById('quiz-type-tag').style.background = qData.type === 'short' ? '#884422' : '#225588';
+    document.getElementById('quiz-text').innerText = qData.q;
+    
+    const optionsDiv = document.getElementById('quiz-options');
+    const shortBox = document.getElementById('short-answer-box');
+    const shortInput = document.getElementById('short-answer-input');
+    
+    optionsDiv.innerHTML = '';
+    document.getElementById('quiz-feedback').style.display = 'none';
+    document.getElementById('btn-next-quiz').style.display = 'none';
+    
+    if (qData.type === 'choice') {
+        optionsDiv.style.display = 'grid';
+        shortBox.style.display = 'none';
+        
+        let opts = [...(qData.options || [])];
+        if (opts.length === 0) opts = [qData.answer, "다른 답1", "다른 답2", "다른 답3"];
+        opts.sort(() => Math.random() - 0.5);
+        
+        opts.forEach(optText => {
+            const btn = document.createElement('button');
+            btn.className = 'retro-button quiz-option';
+            btn.innerText = optText;
+            btn.onclick = () => checkQuizAnswer(optText, qData.answer, qData.explanation, qData.hint, btn);
+            optionsDiv.appendChild(btn);
+        });
+    } else {
+        optionsDiv.style.display = 'none';
+        shortBox.style.display = 'flex';
+        shortInput.value = '';
+        shortInput.focus();
+    }
+}
+
+function submitShortAnswer() {
+    const inputVal = document.getElementById('short-answer-input').value.trim();
+    if (!inputVal) return;
+    const qData = shuffledQuestions[currentQuestionIndex];
+    checkQuizAnswer(inputVal, qData.answer, qData.explanation, qData.hint, null);
+}
+
+function checkQuizAnswer(userAns, correctAns, explanation, hint, btnClicked) {
+    const cleanUser = String(userAns).replace(/\s+/g, '').toLowerCase();
+    const cleanCorrect = String(correctAns).replace(/\s+/g, '').toLowerCase();
+    
+    const isCorrect = (cleanUser === cleanCorrect) || 
+                      (cleanCorrect.includes(cleanUser) && cleanUser.length >= 2);
+    
+    if (isCorrect) {
+        if (isFirstTry) firstTryCount++;
+        isFirstTry = false;
+        
+        if (btnClicked) {
+            document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+            btnClicked.style.background = '#44ff44';
+            btnClicked.style.color = '#000';
+        }
+        
+        const reward = 3000 + Math.floor(Math.random() * 2000);
+        money += reward;
+        updateTopHUD();
+        saveCurrentGameData();
+        
+        const feedback = document.getElementById('quiz-feedback');
+        feedback.style.display = 'block';
+        feedback.innerHTML = `<span style="color: #00aa00;">✅ 정답입니다! 연구기금 ₩${formatMoney(reward)}을 획득했습니다.</span><br><br>${explanation}`;
+        document.getElementById('btn-next-quiz').style.display = 'block';
+    } else {
+        isFirstTry = false;
+        if (btnClicked) {
+            btnClicked.style.background = '#ff4444';
+            btnClicked.style.color = '#fff';
+            setTimeout(() => { btnClicked.style.background = '#e0e0e0'; btnClicked.style.color = '#000'; }, 1000);
+        }
+        document.getElementById('hint-text').innerText = hint || "다시 한번 곰곰이 생각해보세요!";
+        document.getElementById('hint-modal-overlay').style.display = 'flex';
+    }
+}
+
+function closeHintModal() {
+    document.getElementById('hint-modal-overlay').style.display = 'none';
+}
+
+function nextQuiz() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex >= shuffledQuestions.length) {
+        document.getElementById('quiz-modal-overlay').style.display = 'none';
+        showOutroModal();
+    } else {
+        renderCurrentQuiz();
+    }
+}
+
+function showOutroModal() {
+    document.getElementById('outro-name').innerText = `${playerName || '수학대장'} 원장님`;
+    document.getElementById('outro-time').innerText = formatTime(Date.now() - gameStartTime);
+    document.getElementById('outro-first-try').innerText = `${firstTryCount} 개`;
+    document.getElementById('outro-score').innerText = `${Math.round((firstTryCount / Math.max(1, shuffledQuestions.length)) * 100)}%`;
+    document.getElementById('outro-guests').innerText = `${guestsList.length} 명`;
+    document.getElementById('outro-money').innerText = `₩ ${formatMoney(money)}`;
+    document.getElementById('outro-modal').style.display = 'flex';
+}
+
+function continueGame() {
+    document.getElementById('outro-modal').style.display = 'none';
+}
+
+/* ==========================================================================
+   7. ISOMETRIC ENGINE & RENDERER
+   ========================================================================== */
+const BGM_TRACKS = [
+    "https://cdn.jsdelivr.net/gh/photonstorm/phaser-examples@master/examples/assets/audio/oedipus_wizball_highscore.mp3",
+    "https://upload.wikimedia.org/wikipedia/commons/3/37/A_Happy_Day.ogg",
+    "https://upload.wikimedia.org/wikipedia/commons/c/c5/A_Comical_Theme.ogg"
+];
+
+let currentTrack = 0;
+const bgmPlayer = document.getElementById('bgm-audio');
+
+function toggleBGM() {
+    const btn = document.getElementById('bgm-play-btn');
+    if (bgmPlayer.paused) {
+        if (!bgmPlayer.src) bgmPlayer.src = BGM_TRACKS[currentTrack];
+        bgmPlayer.play().catch(e => console.log("BGM Error:", e));
+        btn.innerText = "⏸ BGM 정지";
+    } else {
+        bgmPlayer.pause();
+        btn.innerText = "🎵 BGM 재생";
+    }
+}
+
+function nextBGM() {
+    currentTrack = (currentTrack + 1) % BGM_TRACKS.length;
+    bgmPlayer.src = BGM_TRACKS[currentTrack];
+    if (document.getElementById('bgm-play-btn').innerText === "⏸ BGM 정지") {
+        bgmPlayer.play().catch(e => console.log("BGM Error:", e));
+    }
+    document.getElementById('bgm-track-info').innerText = `Track ${currentTrack + 1}/3`;
+}
+
+const CATALOG = {
+    facility: [
+        { id: 'park_entrance', name: '공원 입구(필수)', type: 'facility', cost: 2000, income: 0, appeal: 50, size: 2, color: '#aa3333', icon: '🎟️', renderType: 'entrance' },
+        { id: 'park_toilet', name: '화장실', type: 'facility', cost: 300, income: 0, appeal: 10, size: 1, color: '#ffffff', icon: '🚻', renderType: 'toilet' }
+    ],
+    path: [
+        { id: 'path_asphalt', name: '아스팔트 보도', type: 'path', cost: 10, income: 0, appeal: 1, size: 1, color: '#666666', icon: '🛣️' },
+        { id: 'path_brick', name: '벽돌 보도', type: 'path', cost: 15, income: 0, appeal: 2, size: 1, color: '#885544', icon: '🧱' }
+    ],
+    ride: [
+        { id: 'ride_coaster_red', name: '레드 루프 코스터', type: 'ride', cost: 5000, income: 150, appeal: 80, size: 3, icon: '🎢', renderType: 'ride' },
+        { id: 'ride_drop', name: '자이로드롭', type: 'ride', cost: 3500, income: 100, appeal: 50, size: 2, icon: '🗼', renderType: 'droptower' },
+        { id: 'ride_ferris', name: '대관람차', type: 'ride', cost: 4000, income: 120, appeal: 60, size: 3, icon: '🎡', renderType: 'ferris' }
+    ],
+    shop: [
+        { id: 'shop_burger', name: '버거 스탠드', type: 'shop', cost: 800, income: 35, appeal: 15, size: 1, color: '#dd8833', icon: '🍔', renderType: 'shop' },
+        { id: 'shop_icecream', name: '아이스크림', type: 'shop', cost: 600, income: 25, appeal: 12, size: 1, color: '#ffccdd', icon: '🍦', renderType: 'shop' }
+    ],
+    scenery: [
+        { id: 'scenery_tree_round', name: '동그란 나무', type: 'scenery', cost: 50, income: 0, appeal: 5, size: 1, color: '#3a8a3a', icon: '🌳', renderType: 'tree' },
+        { id: 'scenery_fountain', name: '분수대', type: 'scenery', cost: 300, income: 5, appeal: 15, size: 1, color: '#aaaaaa', icon: '⛲', renderType: 'fountain' }
+    ]
+};
+
+const TILE_W = 64, TILE_H = 32, GRID_SIZE = 30;
+let camX = 0, camY = 0, money = 5000, incomePerTick = 0, rating = 0;
+let currentBuildItem = null, parkEntranceBuilt = false, entrancePos = null, playerName = ""; 
+let gridMap = [], entities = [], floatingTexts = [];
+let isLowSpec = false, isDemolishMode = false, shuffledQuestions = [], currentQuestionIndex = 0;
+let gameStartTime = 0, firstTryCount = 0, isFirstTry = true; 
+
+for(let r=0; r<GRID_SIZE; r++){
+    gridMap[r] = [];
+    for(let c=0; c<GRID_SIZE; c++){
+        const isDark = (r+c)%2 === 0;
+        gridMap[r][c] = { type: 'grass', color: isDark ? '#4c8a41' : '#457e3a', obj: null };
+    }
+}
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+function centerCamera() { camX = 0; camY = window.innerHeight / 2 - (GRID_SIZE * TILE_H / 2); }
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize);
+resize(); centerCamera(); 
+
+function toScreen(r, c) { return { x: (c - r) * (TILE_W / 2) + camX + canvas.width / 2, y: (c + r) * (TILE_H / 2) + camY }; }
+function toGrid(sx, sy) {
+    const adjX = sx - camX - canvas.width / 2; const adjY = sy - camY;
+    return { r: Math.floor((adjY / (TILE_H / 2) - adjX / (TILE_W / 2)) / 2), c: Math.floor((adjX / (TILE_W / 2) + adjY / (TILE_H / 2)) / 2) };
+}
+
+function drawTile(sx, sy, color, highlight = false, isPath = false, tileItem = null, r = 0, c = 0, isDemolishHighlight = false) {
+    let actualColor = color, strokeColor = '#2b5a26';
+    if (isDemolishHighlight) { actualColor = '#ff4444'; strokeColor = '#ff8888'; }
+    else if (highlight) { actualColor = '#44aaff'; strokeColor = '#88ccff'; }
+    
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx + TILE_W / 2, sy + TILE_H / 2);
+    ctx.lineTo(sx, sy + TILE_H);
+    ctx.lineTo(sx - TILE_W / 2, sy + TILE_H / 2);
+    ctx.closePath();
+    ctx.fillStyle = actualColor;
+    ctx.fill();
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+}
+
+function drawIsoCube(bx, by, sizeR, sizeC, height, colorTop, colorLeft, colorRight) {
+    const p1 = { x: bx, y: by };
+    const p2 = { x: bx + sizeC * (TILE_W / 2), y: by + sizeC * (TILE_H / 2) };
+    const p3 = { x: bx + (sizeC - sizeR) * (TILE_W / 2), y: by + (sizeC + sizeR) * (TILE_H / 2) };
+    const p4 = { x: bx - sizeR * (TILE_W / 2), y: by + sizeR * (TILE_H / 2) };
+
+    ctx.fillStyle = colorLeft; ctx.beginPath(); ctx.moveTo(p4.x, p4.y); ctx.lineTo(p3.x, p3.y); ctx.lineTo(p3.x, p3.y - height); ctx.lineTo(p4.x, p4.y - height); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = colorRight; ctx.beginPath(); ctx.moveTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.lineTo(p3.x, p3.y - height); ctx.lineTo(p2.x, p2.y - height); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = colorTop; ctx.beginPath(); ctx.moveTo(p1.x, p1.y - height); ctx.lineTo(p2.x, p2.y - height); ctx.lineTo(p3.x, p3.y - height); ctx.lineTo(p4.x, p4.y - height); ctx.closePath(); ctx.fill();
+}
+
+function drawEntity(entity) {
+    const { item, r, c } = entity;
+    const { x: bx, y: by } = toScreen(r, c);
+    const cx = bx;
+    const cy = by + (item.size) * (TILE_H / 2);
+
+    try {
+        if (item.type === 'shop') {
+            drawIsoCube(bx, by, item.size, item.size, 15, item.color || '#dd8833', '#aa6622', '#884411');
+            ctx.font = '24px Arial'; ctx.textAlign = 'center'; ctx.fillText(item.icon, cx, cy - 20);
+        } else if (item.renderType === 'entrance') {
+            drawIsoCube(bx, by, 2, 2, 8, '#f8f9fa', '#e0e0e0', '#cccccc');
+            ctx.font = 'bold 16px "Galmuri9", Arial'; ctx.fillStyle = '#d50000'; ctx.textAlign = 'center';
+            ctx.fillText('MATH PARK', cx, cy - 45);
+            ctx.font = '28px Arial'; ctx.fillText('🎟️', cx, cy - 15);
+        } else if (item.type === 'ride') {
+            drawIsoCube(bx, by, item.size, item.size, 10, item.color || '#555', '#444', '#333');
+            ctx.font = '28px Arial'; ctx.textAlign = 'center'; ctx.fillText(item.icon, cx, cy - 25);
+        } else if (item.renderType === 'tree') {
+            ctx.fillStyle = '#5c4033'; ctx.fillRect(cx - 2, cy - 15, 4, 15); ctx.fillStyle = item.color;
+            ctx.beginPath(); ctx.arc(cx, cy - 15, 12, 0, Math.PI*2); ctx.fill();
+        } else if (item.renderType === 'fountain') {
+            drawIsoCube(bx, by, 1, 1, 10, '#ccc', '#999', '#777'); ctx.fillStyle = '#44aaff'; ctx.beginPath(); ctx.ellipse(cx, cy - 10, 16, 8, 0, 0, Math.PI*2); ctx.fill();
+        }
+    } catch(err) { console.error("Rendering error: ", err); }
+}
+
+let guestsList = [];
+function spawnGuestAt(r, c) {
+    guestsList.push({ r: r, c: c, target: {r: r, c: c}, color: ['#ef4444', '#3b82f6', '#eab308', '#ffffff'][Math.floor(Math.random()*4)] });
+}
+
+function update() {
+    guestsList.forEach(g => {
+        if (Math.random() < 0.05) {
+            g.r = Math.max(0, Math.min(GRID_SIZE-1, g.r + (Math.random()-0.5)*0.2));
+            g.c = Math.max(0, Math.min(GRID_SIZE-1, g.c + (Math.random()-0.5)*0.2));
+        }
+    });
+    for(let i=floatingTexts.length-1; i>=0; i--) { let ft = floatingTexts[i]; ft.y -= 1; ft.alpha -= 0.01; if(ft.alpha <= 0) floatingTexts.splice(i, 1); }
+}
+
+let currentScale = 1.0, mouseX = 0, mouseY = 0, isDragging = false, dragStartX, dragStartY, camStartX, camStartY;
+
+canvas.addEventListener('mousedown', e => { if(e.button === 2) { cancelModes(); return; } isDragging = true; dragStartX = e.clientX; dragStartY = e.clientY; camStartX = camX; camStartY = camY; });
+canvas.addEventListener('mousemove', e => { mouseX = (e.clientX - canvas.width/2) / currentScale + canvas.width/2; mouseY = (e.clientY - canvas.height/2) / currentScale + canvas.height/2; if(isDragging) { camX = camStartX + (e.clientX - dragStartX) / currentScale; camY = camStartY + (e.clientY - dragStartY) / currentScale; } });
+canvas.addEventListener('mouseup', e => {
+    if(e.button === 2) return; isDragging = false;
+    if(Math.abs(e.clientX - dragStartX) < 5 && Math.abs(e.clientY - dragStartY) < 5) {
+        const adjX = (e.clientX - canvas.width/2) / currentScale + canvas.width/2; const adjY = (e.clientY - canvas.height/2) / currentScale + canvas.height/2;
+        if(currentBuildItem) buildItemAt(adjX, adjY); else if(isDemolishMode) demolishItemAt(adjX, adjY);
+    }
+});
+canvas.addEventListener('wheel', e => { e.preventDefault(); const zoomAmount = e.deltaY > 0 ? 0.9 : 1.1; currentScale = Math.min(Math.max(0.3, currentScale * zoomAmount), 3.0); }, { passive: false });
+canvas.addEventListener('contextmenu', e => { e.preventDefault(); cancelModes(); });
+
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save(); ctx.translate(canvas.width / 2, canvas.height / 2); ctx.scale(currentScale, currentScale); ctx.translate(-canvas.width / 2, -canvas.height / 2);
+    
+    let renderList = []; let hoverRC = toGrid(mouseX, mouseY); let demolishObj = null;
+    if(isDemolishMode && hoverRC && hoverRC.r >= 0 && hoverRC.c >= 0 && hoverRC.r < GRID_SIZE && hoverRC.c < GRID_SIZE) { demolishObj = gridMap[hoverRC.r][hoverRC.c].obj; }
+
+    for(let r=0; r<GRID_SIZE; r++){
+        for(let c=0; c<GRID_SIZE; c++){
+            const { x, y } = toScreen(r, c); const tile = gridMap[r][c]; let highlight = false; let isDemolishHighlight = false;
+            if(currentBuildItem && hoverRC && r >= hoverRC.r && r < hoverRC.r + currentBuildItem.size && c >= hoverRC.c && c < hoverRC.c + currentBuildItem.size) { highlight = true; }
+            else if (isDemolishMode && demolishObj && tile.obj === demolishObj) { isDemolishHighlight = true; }
+            let color = tile.color; let isPath = false; if (tile.type === 'path') { color = tile.item.color; isPath = true; }
+            drawTile(x, y, color, highlight, isPath, isPath ? tile.item : null, r, c, isDemolishHighlight);
+            if (tile.obj && tile.obj.r === r && tile.obj.c === c && tile.obj.item.type !== 'path') { renderList.push({ type: 'entity', entity: tile.obj, z: tile.obj.r + tile.obj.c + (tile.obj.item.size * 0.5) }); }
+        }
+    }
+
+    guestsList.forEach(g => { const { x, y } = toScreen(g.r, g.c); ctx.fillStyle = g.color; ctx.fillRect(x - 3, y - 10, 6, 10); });
+    renderList.sort((a, b) => a.z - b.z);
+    renderList.forEach(item => { if (item.type === 'entity') drawEntity(item.entity); });
+
+    floatingTexts.forEach(ft => { ctx.fillStyle = `rgba(${ft.colorRgb}, ${ft.alpha})`; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'center'; ctx.fillText(ft.text, ft.x, ft.y); });
+    ctx.restore();
+}
+
+function loop() { update(); render(); requestAnimationFrame(loop); }
+
+function toggleDemolishMode() {
+    let wasDemolish = isDemolishMode; cancelModes();
+    if (!wasDemolish) { isDemolishMode = true; document.getElementById('btn-demolish').classList.add('selected'); document.getElementById('build-cursor-tip').innerHTML = "철거할 대상을 클릭하세요<br>(취소: 빈 곳 우클릭 또는 철거 버튼 재클릭)"; document.getElementById('build-cursor-tip').style.display = 'block'; document.getElementById('build-window').style.display = 'none'; }
+}
+
+function cancelModes() { currentBuildItem = null; isDemolishMode = false; document.getElementById('btn-demolish').classList.remove('selected'); document.getElementById('build-cursor-tip').style.display = 'none'; document.querySelectorAll('.build-item').forEach(el => el.classList.remove('selected')); }
+
+function demolishItemAt(sx, sy) {
+    const { r, c } = toGrid(sx, sy); if(r < 0 || c < 0 || r >= GRID_SIZE || c >= GRID_SIZE) return;
+    const targetCell = gridMap[r][c]; if (!targetCell.obj) return;
+    const entityToDestroy = targetCell.obj; const item = entityToDestroy.item;
+    money += item.cost; rating -= (item.appeal || 0); incomePerTick -= (item.income || 0);
+    for(let ir = entityToDestroy.r; ir < entityToDestroy.r + item.size; ir++) {
+        for(let ic = entityToDestroy.c; ic < entityToDestroy.c + item.size; ic++) {
+            if (gridMap[ir] && gridMap[ir][ic] && gridMap[ir][ic].obj === entityToDestroy) { gridMap[ir][ic].obj = null; if(gridMap[ir][ic].type === 'path') { gridMap[ir][ic].type = 'grass'; gridMap[ir][ic].item = null; } }
+        }
+    }
+    if (item.id === 'park_entrance') { parkEntranceBuilt = false; entrancePos = null; document.getElementById('entrance-warning').style.display = 'inline-block'; }
+    const idx = entities.indexOf(entityToDestroy); if(idx > -1) entities.splice(idx, 1);
+    updateTopHUD(); saveCurrentGameData(); const { x: ex, y: ey } = toScreen(entityToDestroy.r, entityToDestroy.c); showFloatingText(ex, ey - 40, `+₩${formatMoney(item.cost)} (철거)`, "68, 255, 68");
+}
+
+function buildItemAt(sx, sy) {
+    const { r, c } = toGrid(sx, sy); const size = currentBuildItem.size; if(r < 0 || c < 0 || r + size > GRID_SIZE || c + size > GRID_SIZE) return;
+    if (currentBuildItem.id === 'park_entrance') {
+        if (parkEntranceBuilt) { showFloatingText(sx, sy, "입구는 하나만 건설 가능합니다!", "255,68,68"); return; }
+        if (r !== 0 && c !== 0 && r + size !== GRID_SIZE && c + size !== GRID_SIZE) { showFloatingText(sx, sy, "입구는 맵의 가장자리에만 건설할 수 있습니다!", "255,68,68"); return; }
+    }
+    for(let ir = r; ir < r + size; ir++) { for(let ic = c; ic < c + size; ic++) { if(gridMap[ir][ic].obj !== null || gridMap[ir][ic].type === 'path') { return; } } }
+    if(money < currentBuildItem.cost) { showFloatingText(sx, sy, "잔액 부족!", "255,68,68"); return; }
+    money -= currentBuildItem.cost; const newObj = { r, c, item: currentBuildItem, queue: [] }; entities.push(newObj);
+    for(let ir = r; ir < r + size; ir++) { for(let ic = c; ic < c + size; ic++) { gridMap[ir][ic].obj = newObj; if(currentBuildItem.type === 'path') { gridMap[ir][ic].type = 'path'; gridMap[ir][ic].item = currentBuildItem; } } }
+    if (currentBuildItem.id === 'park_entrance') { parkEntranceBuilt = true; entrancePos = {r: r, c: c}; document.getElementById('entrance-warning').style.display = 'none'; }
+    rating += currentBuildItem.appeal || 0; incomePerTick += currentBuildItem.income; updateTopHUD(); saveCurrentGameData(); showFloatingText(sx, sy, `-₩${formatMoney(currentBuildItem.cost)}`, "255,68,68");
+}
+
+function closeBuildWindow() { document.getElementById('build-window').style.display = 'none'; cancelModes(); }
+
+function toggleBuildWindow(category) {
+    cancelModes(); const win = document.getElementById('build-window'); win.style.display = 'flex'; document.getElementById('build-window-title').innerText = category === 'path' ? '보도 설치' : category === 'ride' ? '놀이기구 건설' : category === 'shop' ? '상점 건설' : category === 'facility' ? '공원 시설' : '조경 배치';
+    const catalog = document.getElementById('build-catalog'); catalog.innerHTML = '';
+    CATALOG[category].forEach(item => {
+        const div = document.createElement('div'); div.className = 'build-item'; let costClass = 'item-cost';
+        div.innerHTML = `<div class="item-icon">${item.icon}</div><div class="item-name">${item.name}</div><div class="${costClass}">₩${formatMoney(item.cost)}</div>`;
+        div.onclick = () => { document.querySelectorAll('.build-item').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); currentBuildItem = item; document.getElementById('build-cursor-tip').innerHTML = "건설할 위치를 클릭하세요<br>(취소: 빈 곳 우클릭 또는 도구모음 재클릭)"; document.getElementById('build-cursor-tip').style.display = 'block'; };
+        catalog.appendChild(div);
+    });
+}
+
+function showFloatingText(sx, sy, text, colorRgb) { floatingTexts.push({ x: sx, y: sy, text: text, alpha: 1, colorRgb: colorRgb }); }
+function formatMoney(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function formatTime(ms) { let totalSeconds = Math.floor(ms / 1000); return `${Math.floor(totalSeconds / 60)}분 ${totalSeconds % 60}초`; }
+function updateTopHUD() { document.getElementById('money-count').textContent = `₩ ${formatMoney(money)}`; document.getElementById('rating-count').textContent = rating; document.getElementById('guest-count').textContent = guestsList.length; }
+
+setInterval(() => {
+    if(document.getElementById('main-menu-modal').style.display !== 'none' || document.getElementById('quiz-modal-overlay').style.display === 'flex') return;
+    if(incomePerTick > 0 && guestsList.length > 0) {
+        money += incomePerTick; updateTopHUD();
+    }
+    if(parkEntranceBuilt && guestsList.length < 500) {
+        if(entrancePos) spawnGuestAt(entrancePos.r + 1, entrancePos.c + 1);
+        updateTopHUD();
+    }
+}, 3000);
+
+setInterval(() => {
+    if (currentNickname) {
+        saveCurrentGameData();
+    }
+}, 20000);
+
+function startGame() { gameStartTime = Date.now(); updateTopHUD(); setTimeout(centerCamera, 100); requestAnimationFrame(loop); }
+
+window.addEventListener('load', () => {
+    initDB().then(() => {
+        console.log("DB System Initialized.");
+    }).catch(e => console.error("DB init failed:", e));
+});
+</script>
+</body>
+</html>
