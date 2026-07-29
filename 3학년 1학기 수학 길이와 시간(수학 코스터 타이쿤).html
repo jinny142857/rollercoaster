@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>수학 코스터 타이쿤</title>
+<title>양배추 수학 코스터 타이쿤</title>
 <!-- Supabase Client JS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -141,16 +141,22 @@ canvas { display: block; width: 100%; height: 100%; }
 .auth-input { width: 100%; padding: 12px; font-family: 'Paperozi', sans-serif; font-size: 18px; text-align: center; border: 2px solid var(--tycoon-border-dark); background: #eee; color: #111; user-select: text; -webkit-user-select: text; }
 .auth-input:focus { outline: none; border-color: var(--money-green); background: #fff; }
 
-/* TEACHER DASHBOARD */
+/* TEACHER DASHBOARD & HALL OF FAME */
 .teacher-box { width: 95%; max-width: 750px; max-height: 90vh; display: flex; flex-direction: column; }
 .teacher-content { padding: 15px; background: #2b3a32; overflow-y: auto; color: #fff; display: flex; flex-direction: column; gap: 15px; }
 .teacher-card { background: var(--tycoon-bg); border: 2px solid var(--tycoon-border-light); padding: 15px; border-radius: 6px; }
 .teacher-card-title { font-size: 16px; font-weight: bold; color: #ffdd44; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 .file-upload-area { border: 2px dashed #688878; padding: 20px; text-align: center; border-radius: 6px; cursor: pointer; background: rgba(0,0,0,0.2); }
 .file-upload-area:hover { border-color: var(--money-green); background: rgba(68, 255, 68, 0.05); }
-.questions-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-.questions-table th, .questions-table td { border: 1px solid #688878; padding: 6px 8px; text-align: left; }
+.questions-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+.questions-table th, .questions-table td { border: 1px solid #688878; padding: 8px 10px; text-align: center; }
 .questions-table th { background: #203028; color: #ffdd44; }
+
+.rank-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 12px; }
+.rank-1 { background: #ffd700; color: #000; }
+.rank-2 { background: #c0c0c0; color: #000; }
+.rank-3 { background: #cd7f32; color: #fff; }
+.rank-other { background: #385045; color: #fff; }
 
 /* OUTRO MODAL */
 .outro-box { width: 550px; max-width: 95%; background: linear-gradient(135deg, #1a2a22, #2b4a3a); border: 4px solid #facc15; box-shadow: 0 0 30px rgba(250, 204, 21, 0.3); border-radius: 15px; text-align: center; }
@@ -181,7 +187,7 @@ canvas { display: block; width: 100%; height: 100%; }
 <!-- 1. START / MAIN MODAL -->
 <div id="main-menu-modal" class="modal-overlay" style="display: flex;">
     <div class="retro-panel intro-box" style="padding: 25px; margin: 15px;">
-        <h1 class="intro-title">수학 코스터<br>타이쿤</h1>
+        <h1 class="intro-title">양배추 수학<br>코스터 타이쿤</h1>
         <div class="intro-sub-title">[ 롤러코스터 수학 퀴즈 탐험대 ]</div>
 
         <p style="font-size: 14px; color: #ffaa44; background: rgba(0,0,0,0.5); padding: 12px; border-radius: 8px; margin-bottom: 15px; line-height: 1.5;">
@@ -196,6 +202,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="start-btn-group">
             <button class="retro-button start-btn" style="background: #228844;" onclick="openAuthModal('new')">🎮 새로 시작하기</button>
             <button class="retro-button start-btn" style="background: #225588;" onclick="openAuthModal('load')">📂 이어하기 (저장된 게임)</button>
+            <button class="retro-button start-btn" style="background: #cc8800;" onclick="openHallOfFame()">🏆 명예의 전당 (순위 보기)</button>
             <button class="retro-button start-btn" style="background: #885522;" onclick="promptTeacherAuth()">👩‍🏫 교사 대시보드 (문제 관리)</button>
         </div>
     </div>
@@ -215,6 +222,28 @@ canvas { display: block; width: 100%; height: 100%; }
         <div style="display: flex; gap: 10px; margin-top: 10px;">
             <button class="retro-button start-btn" style="flex: 1; background: #228844;" id="btn-auth-confirm" onclick="submitAuth()">확인 및 시작</button>
             <button class="retro-button start-btn" style="flex: 1; background: #666666;" onclick="closeAuthModal()">취소</button>
+        </div>
+    </div>
+</div>
+
+<!-- HALL OF FAME MODAL -->
+<div id="fame-modal" class="modal-overlay">
+    <div class="retro-panel teacher-box">
+        <div class="window-titlebar">
+            <span>🏆 명예의 전당 (최고 경영자 순위)</span>
+            <div class="close-btn" onclick="closeHallOfFame()">X</div>
+        </div>
+        <div class="teacher-content">
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 5px;">
+                <button class="retro-button" id="rank-tab-money" style="flex: 1; padding: 10px; background: #cc8800; font-weight: bold;" onclick="switchRankTab('money')">💰 보유 자금 순위</button>
+                <button class="retro-button" id="rank-tab-rating" style="flex: 1; padding: 10px; background: #385045; font-weight: bold;" onclick="switchRankTab('rating')">⭐ 놀이공원 가치(레벨) 순위</button>
+            </div>
+            
+            <div id="hall-of-fame-list" style="max-height: 350px; overflow-y: auto;">
+                <!-- Dynamically rendered ranking table -->
+            </div>
+            
+            <button class="retro-button" style="padding: 12px; background: #444; width: 100%; font-weight: bold;" onclick="closeHallOfFame()">닫기</button>
         </div>
     </div>
 </div>
@@ -514,6 +543,34 @@ async function dbGetUserData(nickname) {
     });
 }
 
+async function dbGetAllSaves() {
+    if (useSupabase && supabaseClient) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('game_saves')
+                .select('*');
+            if (error) throw error;
+            if (data) {
+                return data.map(d => ({
+                    nickname: d.nickname,
+                    gameData: d.game_data
+                }));
+            }
+        } catch (err) {
+            console.error("Cloud DB Get All Saves Failed, falling back to LocalIndexedDB:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
+    return new Promise((resolve, reject) => {
+        const tx = localDb.transaction('saves', 'readonly');
+        const store = tx.objectStore('saves');
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = (e) => reject(e);
+    });
+}
+
 async function dbGetAllQuestions() {
     if (useSupabase && supabaseClient) {
         try {
@@ -702,7 +759,86 @@ async function submitAuth() {
 }
 
 /* ==========================================================================
-   4. TEACHER AUTHENTICATION
+   4. HALL OF FAME (명예의 전당) ENGINE
+   ========================================================================== */
+let hallOfFameTab = 'money'; // 'money' or 'rating'
+
+async function openHallOfFame() {
+    document.getElementById('main-menu-modal').style.display = 'none';
+    document.getElementById('fame-modal').style.display = 'flex';
+    await renderHallOfFameTable();
+}
+
+function closeHallOfFame() {
+    document.getElementById('fame-modal').style.display = 'none';
+    document.getElementById('main-menu-modal').style.display = 'flex';
+}
+
+function switchRankTab(tab) {
+    hallOfFameTab = tab;
+    document.getElementById('rank-tab-money').style.background = tab === 'money' ? '#cc8800' : '#385045';
+    document.getElementById('rank-tab-rating').style.background = tab === 'rating' ? '#cc8800' : '#385045';
+    renderHallOfFameTable();
+}
+
+async function renderHallOfFameTable() {
+    const container = document.getElementById('hall-of-fame-list');
+    container.innerHTML = '<p style="font-size:13px; color:#aaa; text-align:center; padding:20px;">순위 데이터를 불러오는 중...</p>';
+    
+    const saves = await dbGetAllSaves();
+    if (!saves || saves.length === 0) {
+        container.innerHTML = '<p style="font-size:13px; color:#aaa; text-align:center; padding:20px;">아직 저장된 명예의 전당 기록이 없습니다.</p>';
+        return;
+    }
+    
+    // Sort saves
+    const sorted = [...saves].sort((a, b) => {
+        const gdA = a.gameData || {};
+        const gdB = b.gameData || {};
+        if (hallOfFameTab === 'money') {
+            return (gdB.money || 0) - (gdA.money || 0);
+        } else {
+            return (gdB.rating || 0) - (gdA.rating || 0);
+        }
+    });
+    
+    let html = `<table class="questions-table">
+        <thead>
+            <tr>
+                <th style="width:15%;">순위</th>
+                <th style="width:30%;">경영자 닉네임</th>
+                <th style="width:25%;">보유 자금</th>
+                <th style="width:30%;">공원 가치(레벨)</th>
+            </tr>
+        </thead>
+        <tbody>`;
+        
+    sorted.slice(0, 20).forEach((s, idx) => {
+        const rank = idx + 1;
+        const gd = s.gameData || {};
+        const moneyVal = gd.money !== undefined ? gd.money : 0;
+        const ratingVal = gd.rating || 0;
+        
+        let rankBadgeClass = 'rank-badge rank-other';
+        let rankText = `${rank}위`;
+        if (rank === 1) { rankBadgeClass = 'rank-badge rank-1'; rankText = '🥇 1위'; }
+        else if (rank === 2) { rankBadgeClass = 'rank-badge rank-2'; rankText = '🥈 2위'; }
+        else if (rank === 3) { rankBadgeClass = 'rank-badge rank-3'; rankText = '🥉 3위'; }
+        
+        html += `<tr>
+            <td><span class="${rankBadgeClass}">${rankText}</span></td>
+            <td><b>${s.nickname}</b></td>
+            <td style="color:var(--money-green); font-weight:bold;">₩ ${formatMoney(moneyVal)}</td>
+            <td style="color:#ffcc00; font-weight:bold;">⭐ ${ratingVal}</td>
+        </tr>`;
+    });
+    
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+/* ==========================================================================
+   5. TEACHER AUTHENTICATION
    ========================================================================== */
 function promptTeacherAuth() {
     document.getElementById('teacher-password-input').value = '';
@@ -726,7 +862,7 @@ function verifyTeacherPassword() {
 }
 
 /* ==========================================================================
-   5. GAME STATE SAVE / LOAD ENGINE
+   6. GAME STATE SAVE / LOAD ENGINE
    ========================================================================== */
 function serializeGameData() {
     let gridMapState = [];
@@ -848,7 +984,7 @@ function resetGameVariables() {
 }
 
 /* ==========================================================================
-   6. TEACHER DASHBOARD & CSV SYSTEM
+   7. TEACHER DASHBOARD & CSV SYSTEM
    ========================================================================== */
 async function openTeacherDashboard() {
     document.getElementById('teacher-modal').style.display = 'flex';
@@ -1012,7 +1148,7 @@ async function resetDefaultQuestions() {
 }
 
 /* ==========================================================================
-   7. QUIZ ENGINE WITH UNIT SELECTION & SHORT ANSWER SUPPORT
+   8. QUIZ ENGINE WITH UNIT SELECTION & SHORT ANSWER SUPPORT
    ========================================================================== */
 let activeQuestions = [];
 let currentUnit = '전체 단원';
@@ -1181,7 +1317,7 @@ function continueGame() {
 }
 
 /* ==========================================================================
-   8. ISOMETRIC ENGINE & RENDERER
+   9. ISOMETRIC ENGINE & RENDERER
    ========================================================================== */
 const BGM_TRACKS = [
     "https://cdn.jsdelivr.net/gh/photonstorm/phaser-examples@master/examples/assets/audio/oedipus_wizball_highscore.mp3",
