@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>수학 코스터 타이쿤</title>
+<!-- Supabase Client JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Galmuri9&family=Noto+Sans+KR:wght@400;700&display=swap');
 :root { --tycoon-bg: #405850; --tycoon-border-light: #688878; --tycoon-border-dark: #203028; --tycoon-text: #ffffff; --tycoon-text-dark: #111111; --tycoon-green: #3a7336; --tycoon-green-dark: #2b5a26; --money-green: #44ff44; }
@@ -38,8 +40,6 @@ canvas { display: block; width: 100%; height: 100%; }
 .item-icon { font-size: 32px; margin-bottom: 4px; line-height: 1; }
 .item-name { font-size: 12px; color: #fff; text-shadow: 1px 1px 0 #000; word-break: keep-all; }
 .item-cost { font-size: 11px; color: var(--money-green); margin-top: 2px; }
-.item-cost.premium { color: #ffaa00; font-weight: bold; text-shadow: 0 0 2px #ff4400; } 
-.item-cost.ultra { color: #ff33ff; font-weight: bold; text-shadow: 0 0 3px #bb00bb; font-size: 12px; } 
 
 /* MODAL OVERLAYS & PANELS */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(3px); }
@@ -55,7 +55,6 @@ canvas { display: block; width: 100%; height: 100%; }
 .quiz-options { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 15px; }
 .quiz-option { background: #e0e0e0; border-top: 2px solid #fff; border-left: 2px solid #fff; border-right: 2px solid #888; border-bottom: 2px solid #888; padding: 12px; font-size: 16px; cursor: pointer; font-family: inherit; color: #000; text-align: left; }
 .quiz-option:hover { background: #f0f0f0; }
-.quiz-option:active { border-top: 2px solid #888; border-left: 2px solid #888; border-right: 2px solid #fff; border-bottom: 2px solid #fff; padding-top: 14px; padding-left: 14px; }
 
 .short-answer-container { display: flex; gap: 8px; margin-bottom: 15px; }
 .short-answer-input { flex: 1; padding: 12px; font-family: 'Galmuri9', sans-serif; font-size: 16px; border: 2px solid #444; background: #fff; color: #000; user-select: text; -webkit-user-select: text; }
@@ -122,11 +121,13 @@ canvas { display: block; width: 100%; height: 100%; }
     <div class="retro-panel intro-box" style="padding: 25px; margin: 15px;">
         <h1 class="intro-title">수학 코스터<br>타이쿤</h1>
         <div class="intro-sub-title">[ 롤러코스터 수학 퀴즈 탐험대 ]</div>
+
         <p style="font-size: 13px; color: #ffaa44; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; margin-bottom: 15px; line-height: 1.4;">
             💡 <b>게임 안내</b><br>
             수학 문제를 풀어 연구기금을 모으고 최고의 놀이공원을 만드세요!<br>
-            교사 대시보드에서 새로운 단원과 문제를 등록할 수 있습니다.
+            교사 대시보드에서 단원별 문제 추가 및 관리가 가능합니다.
         </p>
+
         <label style="color: #fff; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 15px; background: #333; padding: 6px 12px; border-radius: 6px;">
             <input type="checkbox" id="low-spec-toggle" style="width: 16px; height: 16px;">
             <span>저사양 모드 켜기 (학교 구형 PC용)</span>
@@ -134,7 +135,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="start-btn-group">
             <button class="retro-button start-btn" style="background: #228844;" onclick="openAuthModal('new')">🎮 새로 시작하기</button>
             <button class="retro-button start-btn" style="background: #225588;" onclick="openAuthModal('load')">📂 이어하기 (저장된 게임)</button>
-            <button class="retro-button start-btn" style="background: #885522;" onclick="openTeacherDashboard()">👩‍🏫 교사 대시보드 (문제 관리)</button>
+            <button class="retro-button start-btn" style="background: #885522;" onclick="promptTeacherAuth()">👩‍🏫 교사 대시보드 (문제 관리)</button>
         </div>
     </div>
 </div>
@@ -153,6 +154,23 @@ canvas { display: block; width: 100%; height: 100%; }
         <div style="display: flex; gap: 10px; margin-top: 10px;">
             <button class="retro-button start-btn" style="flex: 1; background: #228844;" id="btn-auth-confirm" onclick="submitAuth()">확인 및 시작</button>
             <button class="retro-button start-btn" style="flex: 1; background: #666666;" onclick="closeAuthModal()">취소</button>
+        </div>
+    </div>
+</div>
+
+<!-- TEACHER AUTH MODAL -->
+<div id="teacher-auth-modal" class="modal-overlay">
+    <div class="retro-panel intro-box" style="padding: 25px; margin: 15px;">
+        <h1 class="intro-title">👩‍🏫 교사 인증</h1>
+        <p class="intro-sub-title">교사 대시보드 접근을 위해 비밀번호를 입력하세요.</p>
+        
+        <div class="auth-input-group">
+            <input type="password" id="teacher-password-input" class="auth-input" placeholder="교사 비밀번호 입력" maxlength="20">
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="retro-button start-btn" style="flex: 1; background: #885522;" onclick="verifyTeacherPassword()">인증 및 입장</button>
+            <button class="retro-button start-btn" style="flex: 1; background: #666666;" onclick="closeTeacherAuthModal()">취소</button>
         </div>
     </div>
 </div>
@@ -192,9 +210,7 @@ canvas { display: block; width: 100%; height: 100%; }
                         🔄 기본 문제로 초기화
                     </button>
                 </div>
-                <div id="questions-summary-list" style="max-height: 200px; overflow-y: auto;">
-                    <!-- Dynamically populated table -->
-                </div>
+                <div id="questions-summary-list" style="max-height: 200px; overflow-y: auto;"></div>
             </div>
             
             <button class="retro-button" style="padding: 12px; background: #444; width: 100%; font-weight: bold;" onclick="closeTeacherDashboard()">닫기</button>
@@ -296,64 +312,80 @@ canvas { display: block; width: 100%; height: 100%; }
 
 <script>
 /* ==========================================================================
-   1. INDEXEDDB DATABASE LAYER
+   1. DATABASE CONFIGURATION (SILENT BACKGROUND CONNECTIVITY)
    ========================================================================== */
+const DEFAULT_SUPABASE_URL = "https://anahupoathfzihixuiyt.supabase.co";
+const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuYWh1cG9hdGhmemloaXh1aXl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNzIwNjEsImV4cCI6MjEwMDg0ODA2MX0.YJCXmEuq_9Ic87Kro4BWXz0_qlSubQEHxzWGqaBO-6Y";
+const TEACHER_PASSWORD_CONFIG = "1234";
+
+let supabaseClient = null;
+let useSupabase = false;
+
 const DB_NAME = 'RollercoasterTycoonDB';
 const DB_VERSION = 1;
-let db = null;
+let localDb = null;
+
+function initSupabaseClient() {
+    const url = DEFAULT_SUPABASE_URL;
+    const key = DEFAULT_SUPABASE_KEY;
+    
+    if (url && key && window.supabase) {
+        try {
+            supabaseClient = window.supabase.createClient(url, key);
+            useSupabase = true;
+            console.log("Database initialized.");
+            return true;
+        } catch (e) {
+            console.error("Database connection error:", e);
+        }
+    }
+    useSupabase = false;
+    return false;
+}
 
 function initDB() {
+    initSupabaseClient();
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
         request.onerror = (e) => { console.error("IndexedDB error:", e); reject(e); };
         request.onsuccess = (e) => {
-            db = e.target.result;
+            localDb = e.target.result;
             seedDefaultQuestions().then(resolve);
         };
         request.onupgradeneeded = (e) => {
-            db = e.target.result;
-            if (!db.objectStoreNames.contains('saves')) {
-                db.createObjectStore('saves', { keyPath: 'nickname' });
+            localDb = e.target.result;
+            if (!localDb.objectStoreNames.contains('saves')) {
+                localDb.createObjectStore('saves', { keyPath: 'nickname' });
             }
-            if (!db.objectStoreNames.contains('questions')) {
-                db.createObjectStore('questions', { keyPath: 'id', autoIncrement: true });
+            if (!localDb.objectStoreNames.contains('questions')) {
+                localDb.createObjectStore('questions', { keyPath: 'id', autoIncrement: true });
             }
         };
     });
 }
 
-// DEFAULT 30 QUESTIONS FOR GRADE 3 SEMESTER 1 UNIT 5 (LENGTH & TIME)
+// DEFAULT 20 QUESTIONS FOR INITIAL SEED
 const DEFAULT_QUESTIONS = [
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이를 무엇이라고 하나요?", options: ["1 mm", "1 m", "1 km", "10 mm"], answer: "1 mm", explanation: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이는 1mm(밀리미터)입니다.", hint: "cm 다음으로 작은 단위를 생각해보세요. 자에 있는 가장 작은 눈금 하나에요." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "5cm 3mm는 몇 mm일까요?", options: ["53 mm", "35 mm", "503 mm", "8 mm"], answer: "53 mm", explanation: "1cm는 10mm입니다. 5cm는 50mm이므로, 50mm + 3mm = 53mm입니다.", hint: "1cm가 몇 mm인지 기억나나요? 1cm = 10mm랍니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "1000m를 하나로 묶어서 나타내는 단위는 무엇일까요?", options: ["1 km", "10 km", "100 cm", "10 mm"], answer: "1 km", explanation: "1000m는 1km(킬로미터)라고 씁니다.", hint: "아주 먼 거리를 나타낼 때 쓰는 단위에요." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "2km 400m는 몇 m일까요? (숫자만 입력 가능)", options: [], answer: "2400", explanation: "1km는 1000m입니다. 2km는 2000m이므로 2400m입니다.", hint: "1km = 1000m 임을 기억하세요." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "3500m는 몇 km 몇 m일까요?", options: ["3km 500m", "35km", "3km 50m", "5km 300m"], answer: "3km 500m", explanation: "3000m는 3km이므로, 3500m는 3km 500m입니다.", hint: "1000m마다 1km로 바꿀 수 있어요." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "시계의 초침이 한 바퀴를 도는 시간인 '1분'은 몇 초일까요?", options: [], answer: "60초", explanation: "초침이 시계를 한 바퀴 도는 데 걸리는 시간은 60초이며 1분과 같습니다.", hint: "작고 얇은 바늘이 한 바퀴를 빙 돌면 60초입니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "80초는 몇 분 몇 초일까요?", options: ["1분 20초", "1분 0초", "2분 20초", "8분"], answer: "1분 20초", explanation: "80초에서 60초(1분)를 빼면 20초가 남으므로 1분 20초입니다.", hint: "1분은 60초입니다. 80초에서 60초를 빼보세요." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "1분 30초는 모두 몇 초일까요?", options: [], answer: "90초", explanation: "1분은 60초입니다. 60초 + 30초 = 90초입니다.", hint: "1분 = 60초" },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "시간의 덧셈을 해봅시다. 2시간 10분 + 1시간 20분은?", options: ["3시간 30분", "3시간 10분", "4시간 30분", "2시간 30분"], answer: "3시간 30분", explanation: "시간은 시간끼리, 분은 분끼리 더합니다. 2+1=3시간, 10+20=30분입니다.", hint: "시간 단위와 분 단위를 각각 따로따로 더해줍니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "30분 40초 + 10분 30초는 얼마일까요?", options: ["41분 10초", "40분 70초", "41분 30초", "40분 10초"], answer: "41분 10초", explanation: "초를 더하면 70초(1분 10초)입니다. 분에 1분을 올려주어 41분 10초가 됩니다.", hint: "60초가 넘어가면 1분으로 받아올림 합니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "4시간 50분 - 2시간 10분은 몇 시간 몇 분일까요?", options: [], answer: "2시간 40분", explanation: "4-2=2시간, 50-10=40분입니다.", hint: "시간, 분을 각각 따로 빼주세요." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "4분 10초 - 1분 30초는?", options: ["2분 40초", "3분 40초", "2분 20초", "3분 20초"], answer: "2분 40초", explanation: "10초에서 30초를 뺄 수 없으므로 1분(60초)을 받아내립니다. (3분 70초) - 1분 30초 = 2분 40초.", hint: "분에서 1분(60초)을 빌려와야 해요." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "오전 9시에 출발해서 오전 11시 30분에 도착했습니다. 걸린 시간은?", options: [], answer: "2시간 30분", explanation: "도착 시각 11시 30분에서 출발 시각 9시를 빼면 2시간 30분입니다.", hint: "도착 시각 - 출발 시각" },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "2km 500m + 1km 600m는?", options: ["4km 100m", "3km 1100m", "3km 100m", "4km 200m"], answer: "4km 100m", explanation: "m끼리 더하면 1100m(1km 100m)입니다. 따라서 4km 100m입니다.", hint: "1000m를 1km로 받아올림 하세요." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "3km 200m - 1km 500m는?", options: ["1km 700m", "2km 700m", "1km 300m", "2km 300m"], answer: "1km 700m", explanation: "200m에서 500m를 뺄 수 없으므로 1km(1000m)를 받아내립니다. (2km 1200m) - 1km 500m = 1km 700m.", hint: "km에서 1000m를 빌려오세요." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "연필의 길이를 잴 때 가장 알맞은 단위는 무엇일까요?", options: ["cm 또는 mm", "km", "kg", "시간"], answer: "cm 또는 mm", explanation: "연필처럼 작은 물건의 길이는 cm나 mm로 재는 것이 적절합니다.", hint: "자가 필요할 때 쓰는 단위입니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "서울에서 부산까지의 거리를 나타낼 때 가장 알맞은 단위는?", options: ["km", "mm", "cm", "m"], answer: "km", explanation: "아주 먼 거리는 km(킬로미터)로 나타냅니다.", hint: "고속도로 표지판 단위입니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "150mm는 몇 cm일까요?", options: [], answer: "15cm", explanation: "10mm가 1cm이므로 150mm는 15cm입니다.", hint: "10mm = 1cm" },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "오후 2시 40분에서 30분 뒤의 시각은 언제일까요?", options: ["오후 3시 10분", "오후 2시 70분", "오후 3시 20분", "오후 3시 00분"], answer: "오후 3시 10분", explanation: "40분 + 30분 = 70분(1시간 10분)입니다. 따라서 오후 3시 10분입니다.", hint: "60분이 지나면 1시간이 올라갑니다." },
-    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "1시간 10분을 분으로만 나타내면 몇 분일까요?", options: [], answer: "70분", explanation: "1시간은 60분입니다. 60 + 10 = 70분입니다.", hint: "1시간 = 60분" }
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이를 무엇이라고 하나요?", options: ["1 mm", "1 m", "1 km", "10 mm"], answer: "1 mm", explanation: "1cm를 10칸으로 똑같이 나눈 눈금 한 칸의 길이는 1mm입니다.", hint: "자에 있는 가장 작은 눈금입니다." },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "5cm 3mm는 몇 mm일까요?", options: ["53 mm", "35 mm", "503 mm", "8 mm"], answer: "53 mm", explanation: "1cm는 10mm입니다. 5cm는 50mm이므로 53mm입니다.", hint: "1cm = 10mm" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "1000m를 하나로 묶어서 나타내는 단위는 무엇일까요?", options: ["1 km", "10 km", "100 cm", "10 mm"], answer: "1 km", explanation: "1000m는 1km(킬로미터)라고 씁니다.", hint: "아주 먼 거리를 나타내는 단위입니다." },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "2km 400m는 몇 m일까요? (숫자만 입력 가능)", options: [], answer: "2400", explanation: "1km는 1000m입니다. 2km는 2000m이므로 2400m입니다.", hint: "1km = 1000m" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "3500m는 몇 km 몇 m일까요?", options: ["3km 500m", "35km", "3km 50m", "5km 300m"], answer: "3km 500m", explanation: "3000m는 3km이므로 3km 500m입니다.", hint: "1000m마다 1km입니다." },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "시계의 초침이 한 바퀴를 도는 시간인 '1분'은 몇 초일까요?", options: [], answer: "60초", explanation: "초침이 한 바퀴 도는 시간은 60초입니다.", hint: "60초 = 1분" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "80초는 몇 분 몇 초일까요?", options: ["1분 20초", "1분 0초", "2분 20초", "8분"], answer: "1분 20초", explanation: "80초에서 60초(1분)를 빼면 20초가 남으므로 1분 20초입니다.", hint: "80 - 60 = 20" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "short", q: "1분 30초는 모두 몇 초일까요?", options: [], answer: "90초", explanation: "1분은 60초입니다. 60 + 30 = 90초입니다.", hint: "60 + 30" },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "시간의 덧셈을 해봅시다. 2시간 10분 + 1시간 20분은?", options: ["3시간 30분", "3시간 10분", "4시간 30분", "2시간 30분"], answer: "3시간 30분", explanation: "2+1=3시간, 10+20=30분입니다.", hint: "시간은 시간끼리, 분은 분끼리 더합니다." },
+    { unit: "3학년 1학기 5단원 길이와 시간", type: "choice", q: "30분 40초 + 10분 30초는 얼마일까요?", options: ["41분 10초", "40분 70초", "41분 30초", "40분 10초"], answer: "41분 10초", explanation: "40+30=70초(1분 10초)이므로 41분 10초입니다.", hint: "60초마다 1분 올려줍니다." }
 ];
 
 function seedDefaultQuestions() {
     return new Promise((resolve) => {
-        const tx = db.transaction('questions', 'readonly');
+        const tx = localDb.transaction('questions', 'readonly');
         const store = tx.objectStore('questions');
         const countReq = store.count();
         countReq.onsuccess = () => {
             if (countReq.result === 0) {
-                const writeTx = db.transaction('questions', 'readwrite');
+                const writeTx = localDb.transaction('questions', 'readwrite');
                 const writeStore = writeTx.objectStore('questions');
                 DEFAULT_QUESTIONS.forEach(q => writeStore.add(q));
                 writeTx.oncomplete = () => resolve();
@@ -364,25 +396,56 @@ function seedDefaultQuestions() {
     });
 }
 
-function dbSaveUserData(nickname, password, gameData) {
+// HYBRID DATA WRAPPERS
+async function dbSaveUserData(nickname, password, gameData) {
+    if (useSupabase && supabaseClient) {
+        try {
+            const { error } = await supabaseClient
+                .from('game_saves')
+                .upsert({
+                    nickname: nickname,
+                    password: password,
+                    game_data: gameData,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'nickname' });
+            if (error) throw error;
+            console.log("Saved to cloud DB:", nickname);
+            return;
+        } catch (err) {
+            console.error("Cloud DB Save Failed, falling back to LocalIndexedDB:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
     return new Promise((resolve, reject) => {
-        const tx = db.transaction('saves', 'readwrite');
+        const tx = localDb.transaction('saves', 'readwrite');
         const store = tx.objectStore('saves');
-        const saveData = {
-            nickname: nickname,
-            password: password,
-            updatedAt: Date.now(),
-            gameData: gameData
-        };
-        const req = store.put(saveData);
+        const req = store.put({ nickname, password, updatedAt: Date.now(), gameData });
         req.onsuccess = () => resolve();
         req.onerror = (e) => reject(e);
     });
 }
 
-function dbGetUserData(nickname) {
+async function dbGetUserData(nickname) {
+    if (useSupabase && supabaseClient) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('game_saves')
+                .select('*')
+                .eq('nickname', nickname)
+                .single();
+            if (error && error.code !== 'PGRST116') throw error;
+            if (data) {
+                return { nickname: data.nickname, password: data.password, gameData: data.game_data };
+            }
+        } catch (err) {
+            console.error("Cloud DB Read Failed, falling back to LocalIndexedDB:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
     return new Promise((resolve, reject) => {
-        const tx = db.transaction('saves', 'readonly');
+        const tx = localDb.transaction('saves', 'readonly');
         const store = tx.objectStore('saves');
         const req = store.get(nickname);
         req.onsuccess = () => resolve(req.result);
@@ -390,9 +453,34 @@ function dbGetUserData(nickname) {
     });
 }
 
-function dbGetAllQuestions() {
+async function dbGetAllQuestions() {
+    if (useSupabase && supabaseClient) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('quiz_questions')
+                .select('*');
+            if (error) throw error;
+            if (data && data.length > 0) {
+                return data.map(q => ({
+                    id: q.id,
+                    unit: q.unit,
+                    type: q.type,
+                    q: q.question,
+                    options: q.options || [],
+                    answer: q.answer,
+                    explanation: q.explanation,
+                    hint: q.hint,
+                    isCustom: q.is_custom
+                }));
+            }
+        } catch (err) {
+            console.error("Cloud DB Questions Fetch Failed, falling back to LocalIndexedDB:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
     return new Promise((resolve, reject) => {
-        const tx = db.transaction('questions', 'readonly');
+        const tx = localDb.transaction('questions', 'readonly');
         const store = tx.objectStore('questions');
         const req = store.getAll();
         req.onsuccess = () => resolve(req.result);
@@ -400,9 +488,32 @@ function dbGetAllQuestions() {
     });
 }
 
-function dbAddQuestions(questionsArray) {
+async function dbAddQuestions(questionsArray) {
+    if (useSupabase && supabaseClient) {
+        try {
+            const rows = questionsArray.map(q => ({
+                unit: q.unit,
+                type: q.type,
+                question: q.q,
+                options: q.options || [],
+                answer: q.answer,
+                explanation: q.explanation,
+                hint: q.hint,
+                is_custom: true
+            }));
+            const { error } = await supabaseClient
+                .from('quiz_questions')
+                .insert(rows);
+            if (error) throw error;
+            return;
+        } catch (err) {
+            console.error("Cloud DB Insert Questions Failed, falling back to LocalIndexedDB:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
     return new Promise((resolve, reject) => {
-        const tx = db.transaction('questions', 'readwrite');
+        const tx = localDb.transaction('questions', 'readwrite');
         const store = tx.objectStore('questions');
         questionsArray.forEach(q => store.add(q));
         tx.oncomplete = () => resolve();
@@ -410,9 +521,19 @@ function dbAddQuestions(questionsArray) {
     });
 }
 
-function dbResetQuestions() {
+async function dbResetQuestions() {
+    if (useSupabase && supabaseClient) {
+        try {
+            await supabaseClient.from('quiz_questions').delete().eq('is_custom', true);
+            return;
+        } catch (err) {
+            console.error("Cloud DB Reset Questions Failed:", err);
+        }
+    }
+    
+    // IndexedDB Fallback
     return new Promise((resolve, reject) => {
-        const tx = db.transaction('questions', 'readwrite');
+        const tx = localDb.transaction('questions', 'readwrite');
         const store = tx.objectStore('questions');
         const clearReq = store.clear();
         clearReq.onsuccess = () => {
@@ -436,7 +557,7 @@ function showToast(message) {
 /* ==========================================================================
    3. AUTH & START ENGINE
    ========================================================================== */
-let authMode = 'new'; // 'new' or 'load'
+let authMode = 'new';
 let currentNickname = '';
 let currentPassword = '';
 
@@ -487,7 +608,6 @@ async function submitAuth() {
             playerName = nickname;
             isLowSpec = document.getElementById('low-spec-toggle').checked;
             
-            // Initialize new game data
             resetGameVariables();
             await saveCurrentGameData();
             document.getElementById('auth-modal').style.display = 'none';
@@ -521,10 +641,33 @@ async function submitAuth() {
 }
 
 /* ==========================================================================
-   4. GAME STATE SAVE / LOAD ENGINE
+   4. TEACHER AUTHENTICATION
+   ========================================================================== */
+function promptTeacherAuth() {
+    document.getElementById('teacher-password-input').value = '';
+    document.getElementById('main-menu-modal').style.display = 'none';
+    document.getElementById('teacher-auth-modal').style.display = 'flex';
+}
+
+function closeTeacherAuthModal() {
+    document.getElementById('teacher-auth-modal').style.display = 'none';
+    document.getElementById('main-menu-modal').style.display = 'flex';
+}
+
+function verifyTeacherPassword() {
+    const inputPass = document.getElementById('teacher-password-input').value.trim();
+    if (inputPass === TEACHER_PASSWORD_CONFIG) {
+        document.getElementById('teacher-auth-modal').style.display = 'none';
+        openTeacherDashboard();
+    } else {
+        alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
+    }
+}
+
+/* ==========================================================================
+   5. GAME STATE SAVE / LOAD ENGINE
    ========================================================================== */
 function serializeGameData() {
-    // Serialize grid map objects
     let gridMapState = [];
     for(let r=0; r<GRID_SIZE; r++) {
         gridMapState[r] = [];
@@ -567,7 +710,6 @@ function restoreGameData(data) {
     firstTryCount = data.firstTryCount || 0;
     currentQuestionIndex = data.solvedCount || 0;
     
-    // Clear entities and reset grid map
     entities = [];
     for(let r=0; r<GRID_SIZE; r++) {
         for(let c=0; c<GRID_SIZE; c++) {
@@ -576,13 +718,11 @@ function restoreGameData(data) {
         }
     }
     
-    // Reconstruct catalog lookup map
     const catalogLookup = {};
     Object.keys(CATALOG).forEach(cat => {
         CATALOG[cat].forEach(item => catalogLookup[item.id] = item);
     });
     
-    // Restore entities
     if (data.entitiesState) {
         data.entitiesState.forEach(es => {
             const item = catalogLookup[es.itemId];
@@ -647,10 +787,9 @@ function resetGameVariables() {
 }
 
 /* ==========================================================================
-   5. TEACHER DASHBOARD & CSV SYSTEM
+   6. TEACHER DASHBOARD & CSV SYSTEM
    ========================================================================== */
 async function openTeacherDashboard() {
-    document.getElementById('main-menu-modal').style.display = 'none';
     document.getElementById('teacher-modal').style.display = 'flex';
     await renderQuestionsSummaryTable();
 }
@@ -664,12 +803,11 @@ async function renderQuestionsSummaryTable() {
     const questions = await dbGetAllQuestions();
     const container = document.getElementById('questions-summary-list');
     
-    if (questions.length === 0) {
+    if (!questions || questions.length === 0) {
         container.innerHTML = '<p style="font-size:12px; color:#aaa;">등록된 문제가 없습니다.</p>';
         return;
     }
     
-    // Group by unit
     const unitGroups = {};
     questions.forEach(q => {
         const u = q.unit || "기타 단원";
@@ -755,7 +893,6 @@ function parseCSV(text) {
         const line = lines[i].trim();
         if (!line) continue;
         
-        // Parse CSV row respecting quotes
         const cols = [];
         let inQuotes = false;
         let token = '';
@@ -814,19 +951,18 @@ async function resetDefaultQuestions() {
 }
 
 /* ==========================================================================
-   6. QUIZ ENGINE WITH UNIT SELECTION & SHORT ANSWER SUPPORT
+   7. QUIZ ENGINE WITH UNIT SELECTION & SHORT ANSWER SUPPORT
    ========================================================================== */
 let activeQuestions = [];
 let currentUnit = '전체 단원';
 
 async function openQuiz() {
     const allQuestions = await dbGetAllQuestions();
-    if (allQuestions.length === 0) {
+    if (!allQuestions || allQuestions.length === 0) {
         alert("등록된 퀴즈 문제가 없습니다.");
         return;
     }
     
-    // Populate unit selector
     const units = ['전체 단원', ...new Set(allQuestions.map(q => q.unit))];
     const select = document.getElementById('quiz-unit-select');
     select.innerHTML = '';
@@ -891,7 +1027,7 @@ function renderCurrentQuiz() {
         optionsDiv.style.display = 'grid';
         shortBox.style.display = 'none';
         
-        let opts = [...qData.options];
+        let opts = [...(qData.options || [])];
         if (opts.length === 0) opts = [qData.answer, "다른 답1", "다른 답2", "다른 답3"];
         opts.sort(() => Math.random() - 0.5);
         
@@ -902,7 +1038,7 @@ function renderCurrentQuiz() {
             btn.onclick = () => checkQuizAnswer(optText, qData.answer, qData.explanation, qData.hint, btn);
             optionsDiv.appendChild(btn);
         });
-    } else { // short answer
+    } else {
         optionsDiv.style.display = 'none';
         shortBox.style.display = 'flex';
         shortInput.value = '';
@@ -918,7 +1054,6 @@ function submitShortAnswer() {
 }
 
 function checkQuizAnswer(userAns, correctAns, explanation, hint, btnClicked) {
-    // Clean strings for flexible match (remove spaces, lower-case)
     const cleanUser = String(userAns).replace(/\s+/g, '').toLowerCase();
     const cleanCorrect = String(correctAns).replace(/\s+/g, '').toLowerCase();
     
@@ -938,7 +1073,7 @@ function checkQuizAnswer(userAns, correctAns, explanation, hint, btnClicked) {
         const reward = 3000 + Math.floor(Math.random() * 2000);
         money += reward;
         updateTopHUD();
-        saveCurrentGameData(); // Auto save on correct answer
+        saveCurrentGameData();
         
         const feedback = document.getElementById('quiz-feedback');
         feedback.style.display = 'block';
@@ -985,14 +1120,12 @@ function continueGame() {
 }
 
 /* ==========================================================================
-   7. ISOMETRIC ENGINE, CATALOG, AND RENDERING PIPELINE
+   8. ISOMETRIC ENGINE & RENDERER
    ========================================================================== */
 const BGM_TRACKS = [
     "https://cdn.jsdelivr.net/gh/photonstorm/phaser-examples@master/examples/assets/audio/oedipus_wizball_highscore.mp3",
     "https://upload.wikimedia.org/wikipedia/commons/3/37/A_Happy_Day.ogg",
-    "https://upload.wikimedia.org/wikipedia/commons/c/c5/A_Comical_Theme.ogg",
-    "https://cdn.jsdelivr.net/gh/photonstorm/phaser-examples@master/examples/assets/audio/bodenstaendig_2000_in_rock_4bit.mp3",
-    "https://cdn.jsdelivr.net/gh/mdn/webaudio-examples@main/audio-basics/outfoxing.mp3"
+    "https://upload.wikimedia.org/wikipedia/commons/c/c5/A_Comical_Theme.ogg"
 ];
 
 let currentTrack = 0;
@@ -1016,67 +1149,37 @@ function nextBGM() {
     if (document.getElementById('bgm-play-btn').innerText === "⏸ BGM 정지") {
         bgmPlayer.play().catch(e => console.log("BGM Error:", e));
     }
-    document.getElementById('bgm-track-info').innerText = `Track ${currentTrack + 1}/5`;
+    document.getElementById('bgm-track-info').innerText = `Track ${currentTrack + 1}/3`;
 }
 
 const CATALOG = {
     facility: [
         { id: 'park_entrance', name: '공원 입구(필수)', type: 'facility', cost: 2000, income: 0, appeal: 50, size: 2, color: '#aa3333', icon: '🎟️', renderType: 'entrance' },
-        { id: 'park_toilet', name: '화장실', type: 'facility', cost: 300, income: 0, appeal: 10, size: 1, color: '#ffffff', icon: '🚻', renderType: 'toilet' },
-        { id: 'park_info', name: '공원 안내소', type: 'facility', cost: 400, income: 0, appeal: 15, size: 1, color: '#ffeb3b', icon: 'ℹ️', renderType: 'info' },
-        { id: 'park_stroller', name: '유모차 대여소', type: 'facility', cost: 500, income: 10, appeal: 12, size: 1, color: '#f8bbd0', icon: '👶', renderType: 'stroller' },
-        { id: 'park_security', name: '보안 센터', type: 'facility', cost: 800, income: 0, appeal: 20, size: 1, color: '#1976d2', icon: '👮', renderType: 'security' },
-        { id: 'park_firstaid', name: '의무실', type: 'facility', cost: 600, income: 0, appeal: 18, size: 1, color: '#ffffff', icon: '✚', renderType: 'firstaid' },
-        { id: 'park_lostchild', name: '미아 보호소', type: 'facility', cost: 450, income: 0, appeal: 14, size: 1, color: '#ffb74d', icon: '🧸', renderType: 'lostchild' },
-        { id: 'park_atm', name: 'ATM 기기', type: 'facility', cost: 350, income: 20, appeal: 5, size: 1, color: '#4caf50', icon: '🏧', renderType: 'atm' }
+        { id: 'park_toilet', name: '화장실', type: 'facility', cost: 300, income: 0, appeal: 10, size: 1, color: '#ffffff', icon: '🚻', renderType: 'toilet' }
     ],
     path: [
         { id: 'path_asphalt', name: '아스팔트 보도', type: 'path', cost: 10, income: 0, appeal: 1, size: 1, color: '#666666', icon: '🛣️' },
-        { id: 'path_brick', name: '벽돌 보도', type: 'path', cost: 15, income: 0, appeal: 2, size: 1, color: '#885544', icon: '🧱' },
-        { id: 'path_wood', name: '나무 보도', type: 'path', cost: 20, income: 0, appeal: 3, size: 1, color: '#aa7744', icon: '🪵' },
-        { id: 'path_stone', name: '돌 보도', type: 'path', cost: 12, income: 0, appeal: 1, size: 1, color: '#999999', icon: '🪨' },
-        { id: 'path_sand', name: '모래 보도', type: 'path', cost: 8, income: 0, appeal: 1, size: 1, color: '#d2b48c', icon: '🏖️' },
-        { id: 'path_grass', name: '잔디 보도', type: 'path', cost: 18, income: 0, appeal: 3, size: 1, color: '#55aa55', icon: '🌱' },
-        { id: 'path_marble', name: '대리석 보도', type: 'path', cost: 25, income: 0, appeal: 4, size: 1, color: '#f0f8ff', icon: '🏛️' },
-        { id: 'path_neon', name: '네온 보도', type: 'path', cost: 30, income: 0, appeal: 5, size: 1, color: '#00ffff', icon: '💡' },
-        { id: 'path_rainbow', name: '무지개 보도', type: 'path', cost: 40, income: 0, appeal: 8, size: 1, color: '#ff0000', icon: '🌈' }
+        { id: 'path_brick', name: '벽돌 보도', type: 'path', cost: 15, income: 0, appeal: 2, size: 1, color: '#885544', icon: '🧱' }
     ],
     ride: [
-        { id: 'ride_inferno', name: '★인페르노 볼케이노', type: 'ride', cost: 200000, income: 2000, appeal: 3000, size: 6, color: '#ff2200', icon: '🌋', renderType: 'inferno_volcano', premium: true, ultra: true },
-        { id: 'ride_crystal', name: '★크리스탈 블리자드', type: 'ride', cost: 220000, income: 2200, appeal: 3500, size: 6, color: '#00ffff', icon: '❄️', renderType: 'crystal_blizzard', premium: true, ultra: true },
-        { id: 'ride_wormhole', name: '★블랙홀 웜홀 드롭', type: 'ride', cost: 150000, income: 1500, appeal: 2000, size: 6, color: '#aa00ff', icon: '🌌', renderType: 'wormhole', premium: true, ultra: true },
-        { id: 'ride_giga', name: '★기가 하이퍼 코스터', type: 'ride', cost: 60000, income: 600, appeal: 800, size: 5, color: '#ff00ff', icon: '🎢', renderType: 'giga_coaster', premium: true },
-        { id: 'ride_coaster_red', name: '레드 루프 코스터', type: 'ride', cost: 5000, income: 150, appeal: 80, size: 3, trackColor: '#ff2222', supportColor: '#aaaaaa', isWooden: false, icon: '🎢', renderType: 'coaster_loop' },
-        { id: 'ride_coaster_wood', name: '우든 롤러코스터', type: 'ride', cost: 4500, income: 140, appeal: 75, size: 3, trackColor: '#8b5a2b', supportColor: '#cd853f', isWooden: true, icon: '🎢', renderType: 'coaster_wooden' },
-        { id: 'ride_drop', name: '자이로드롭', type: 'ride', cost: 3500, income: 100, appeal: 50, size: 2, color: '#ffffff', icon: '🗼', renderType: 'droptower' },
-        { id: 'ride_ferris', name: '대관람차', type: 'ride', cost: 4000, income: 120, appeal: 60, size: 3, color: '#ffcc00', icon: '🎡', renderType: 'ferris' },
-        { id: 'ride_merry', name: '회전목마', type: 'ride', cost: 2000, income: 60, appeal: 30, size: 2, color: '#ff88dd', icon: '🎠', renderType: 'merry' },
-        { id: 'ride_pirate', name: '바이킹', type: 'ride', cost: 3000, income: 90, appeal: 45, size: 3, color: '#885533', icon: '🏴‍☠️', renderType: 'pirate' },
-        { id: 'ride_haunted', name: '귀신의 집', type: 'ride', cost: 2500, income: 80, appeal: 40, size: 2, color: '#2a1b38', icon: '👻', renderType: 'haunted' },
-        { id: 'ride_flume', name: '후룸라이드', type: 'ride', cost: 3800, income: 110, appeal: 55, size: 3, color: '#33aaff', icon: '🛶', renderType: 'flume' },
-        { id: 'ride_bumper', name: '범퍼카', type: 'ride', cost: 2200, income: 70, appeal: 35, size: 2, color: '#cc44cc', icon: '🚗', renderType: 'bumper' }
+        { id: 'ride_coaster_red', name: '레드 루프 코스터', type: 'ride', cost: 5000, income: 150, appeal: 80, size: 3, icon: '🎢', renderType: 'ride' },
+        { id: 'ride_drop', name: '자이로드롭', type: 'ride', cost: 3500, income: 100, appeal: 50, size: 2, icon: '🗼', renderType: 'droptower' },
+        { id: 'ride_ferris', name: '대관람차', type: 'ride', cost: 4000, income: 120, appeal: 60, size: 3, icon: '🎡', renderType: 'ferris' }
     ],
     shop: [
-        { id: 'shop_palace', name: '★로열 골든 팰리스', type: 'shop', cost: 150000, income: 1500, appeal: 1800, size: 4, color: '#ffd700', icon: '👑', renderType: 'golden_palace', premium: true, ultra: true },
-        { id: 'shop_skylounge', name: '★스카이 라운지 바', type: 'shop', cost: 20000, income: 150, appeal: 100, size: 2, color: '#111133', icon: '🍸', renderType: 'sky_lounge', premium: true },
         { id: 'shop_burger', name: '버거 스탠드', type: 'shop', cost: 800, income: 35, appeal: 15, size: 1, color: '#dd8833', icon: '🍔', renderType: 'shop' },
-        { id: 'shop_icecream', name: '아이스크림', type: 'shop', cost: 600, income: 25, appeal: 12, size: 1, color: '#ffccdd', icon: '🍦', renderType: 'shop' },
-        { id: 'shop_balloon', name: '풍선 가게', type: 'shop', cost: 400, income: 15, appeal: 20, size: 1, color: '#dd4444', icon: '🎈', renderType: 'shop' },
-        { id: 'shop_popcorn', name: '팝콘', type: 'shop', cost: 500, income: 20, appeal: 10, size: 1, color: '#ffffff', icon: '🍿', renderType: 'shop' }
+        { id: 'shop_icecream', name: '아이스크림', type: 'shop', cost: 600, income: 25, appeal: 12, size: 1, color: '#ffccdd', icon: '🍦', renderType: 'shop' }
     ],
     scenery: [
         { id: 'scenery_tree_round', name: '동그란 나무', type: 'scenery', cost: 50, income: 0, appeal: 5, size: 1, color: '#3a8a3a', icon: '🌳', renderType: 'tree' },
-        { id: 'scenery_tree_pine', name: '소나무', type: 'scenery', cost: 60, income: 0, appeal: 6, size: 1, color: '#2a6a2a', icon: '🌲', renderType: 'pine' },
-        { id: 'scenery_tree_palm', name: '야자수', type: 'scenery', cost: 80, income: 0, appeal: 8, size: 1, color: '#44aa44', icon: '🌴', renderType: 'palm' },
-        { id: 'scenery_fountain', name: '분수대', type: 'scenery', cost: 300, income: 5, appeal: 15, size: 1, color: '#aaaaaa', icon: '⛲', renderType: 'fountain' },
-        { id: 'scenery_flowers', name: '꽃단지', type: 'scenery', cost: 100, income: 0, appeal: 12, size: 1, color: '#ff55aa', icon: '🌷', renderType: 'flowers' }
+        { id: 'scenery_fountain', name: '분수대', type: 'scenery', cost: 300, income: 5, appeal: 15, size: 1, color: '#aaaaaa', icon: '⛲', renderType: 'fountain' }
     ]
 };
 
 const TILE_W = 64, TILE_H = 32, GRID_SIZE = 30;
 let camX = 0, camY = 0, money = 5000, incomePerTick = 0, rating = 0;
 let currentBuildItem = null, parkEntranceBuilt = false, entrancePos = null, playerName = ""; 
-let gridMap = [], entities = [], floatingTexts = [], explosions = [], needsPathWarning = false;
+let gridMap = [], entities = [], floatingTexts = [];
 let isLowSpec = false, isDemolishMode = false, shuffledQuestions = [], currentQuestionIndex = 0;
 let gameStartTime = 0, firstTryCount = 0, isFirstTry = true; 
 
@@ -1093,7 +1196,6 @@ const ctx = canvas.getContext('2d');
 function centerCamera() { camX = 0; camY = window.innerHeight / 2 - (GRID_SIZE * TILE_H / 2); }
 function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resize);
-window.addEventListener('orientationchange', () => setTimeout(resize, 100));
 resize(); centerCamera(); 
 
 function toScreen(r, c) { return { x: (c - r) * (TILE_W / 2) + camX + canvas.width / 2, y: (c + r) * (TILE_H / 2) + camY }; }
@@ -1131,64 +1233,31 @@ function drawIsoCube(bx, by, sizeR, sizeC, height, colorTop, colorLeft, colorRig
     ctx.fillStyle = colorTop; ctx.beginPath(); ctx.moveTo(p1.x, p1.y - height); ctx.lineTo(p2.x, p2.y - height); ctx.lineTo(p3.x, p3.y - height); ctx.lineTo(p4.x, p4.y - height); ctx.closePath(); ctx.fill();
 }
 
-function drawIsoCylinder(cx, cy, radius, height, colorTop, colorSide) {
-    ctx.fillStyle = colorSide; ctx.beginPath(); ctx.ellipse(cx, cy, radius, radius * 0.5, 0, 0, Math.PI); ctx.lineTo(cx - radius, cy - height); ctx.ellipse(cx, cy - height, radius, radius * 0.5, 0, Math.PI, 0, true); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = colorTop; ctx.beginPath(); ctx.ellipse(cx, cy - height, radius, radius * 0.5, 0, 0, Math.PI * 2); ctx.fill();
-}
-
-function drawIsoPyramid(bx, by, sizeR, sizeC, baseHeight, height, colorLeft, colorRight) {
-    const p2 = { x: bx + sizeC * (TILE_W / 2), y: by + sizeC * (TILE_H / 2) };
-    const p3 = { x: bx + (sizeC - sizeR) * (TILE_W / 2), y: by + (sizeC + sizeR) * (TILE_H / 2) };
-    const p4 = { x: bx - sizeR * (TILE_W / 2), y: by + sizeR * (TILE_H / 2) };
-    const apex = { x: bx + (sizeC - sizeR) * (TILE_W / 2), y: by + (sizeC + sizeR) * (TILE_H / 2) - baseHeight - height };
-
-    ctx.fillStyle = colorLeft; ctx.beginPath(); ctx.moveTo(p4.x, p4.y - baseHeight); ctx.lineTo(p3.x, p3.y - baseHeight); ctx.lineTo(apex.x, apex.y); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = colorRight; ctx.beginPath(); ctx.moveTo(p2.x, p2.y - baseHeight); ctx.lineTo(p3.x, p3.y - baseHeight); ctx.lineTo(apex.x, apex.y); ctx.closePath(); ctx.fill();
-}
-
 function drawEntity(entity) {
     const { item, r, c } = entity;
     const { x: bx, y: by } = toScreen(r, c);
-    const cx = bx + (item.size - 1) * (TILE_W / 4) - (item.size - 1) * (TILE_W / 4);
+    const cx = bx;
     const cy = by + (item.size) * (TILE_H / 2);
-    const tTime = Date.now();
 
     try {
         if (item.type === 'shop') {
-            drawIsoCube(bx, by, item.size, item.size, 15, item.color, shadeColor(item.color, -20), shadeColor(item.color, -40));
+            drawIsoCube(bx, by, item.size, item.size, 15, item.color || '#dd8833', '#aa6622', '#884411');
             ctx.font = '24px Arial'; ctx.textAlign = 'center'; ctx.fillText(item.icon, cx, cy - 20);
         } else if (item.renderType === 'entrance') {
             drawIsoCube(bx, by, 2, 2, 8, '#f8f9fa', '#e0e0e0', '#cccccc');
             ctx.font = 'bold 16px "Galmuri9", Arial'; ctx.fillStyle = '#d50000'; ctx.textAlign = 'center';
             ctx.fillText('MATH PARK', cx, cy - 45);
             ctx.font = '28px Arial'; ctx.fillText('🎟️', cx, cy - 15);
-        } else if (item.renderType === 'toilet') {
-            drawIsoCube(bx, by, 1, 1, 12, '#44aaff', '#2288dd', '#1166bb');
-            ctx.font = '16px Arial'; ctx.textAlign = 'center'; ctx.fillText('🚻', cx, cy - 18);
-        } else if (item.renderType === 'droptower') {
-            const h = 100; drawIsoCube(bx, by, 2, 2, 10, '#aaa', '#888', '#666'); ctx.fillStyle = '#eee'; ctx.fillRect(cx - 6, cy - h, 12, h);
-            const ringY = cy - h + 20 + Math.abs(Math.sin(tTime*0.002)*70); ctx.fillStyle = '#ff4444'; ctx.beginPath(); ctx.ellipse(cx, ringY, 20, 8, 0, 0, Math.PI*2); ctx.fill();
-        } else if (item.renderType === 'ferris') {
-            drawIsoCube(bx, by, 3, 3, 10, '#888', '#666', '#444'); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(cx, cy - 60, 50, 50, 0, 0, Math.PI*2); ctx.stroke();
         } else if (item.type === 'ride') {
             drawIsoCube(bx, by, item.size, item.size, 10, item.color || '#555', '#444', '#333');
             ctx.font = '28px Arial'; ctx.textAlign = 'center'; ctx.fillText(item.icon, cx, cy - 25);
-        } else if (item.renderType === 'tree' || item.renderType === 'pine' || item.renderType === 'palm') {
+        } else if (item.renderType === 'tree') {
             ctx.fillStyle = '#5c4033'; ctx.fillRect(cx - 2, cy - 15, 4, 15); ctx.fillStyle = item.color;
             ctx.beginPath(); ctx.arc(cx, cy - 15, 12, 0, Math.PI*2); ctx.fill();
         } else if (item.renderType === 'fountain') {
             drawIsoCube(bx, by, 1, 1, 10, '#ccc', '#999', '#777'); ctx.fillStyle = '#44aaff'; ctx.beginPath(); ctx.ellipse(cx, cy - 10, 16, 8, 0, 0, Math.PI*2); ctx.fill();
-        } else if (item.renderType === 'flowers') {
-            ctx.fillStyle = '#228822'; ctx.beginPath(); ctx.ellipse(cx, cy, 18, 9, 0, 0, Math.PI*2); ctx.fill(); ctx.font = '12px Arial'; ctx.textAlign='center'; ctx.fillText('🌸🌷', cx, cy-3);
         }
     } catch(err) { console.error("Rendering error: ", err); }
-}
-
-function shadeColor(color, percent) {
-    let R = parseInt(color.substring(1,3),16); let G = parseInt(color.substring(3,5),16); let B = parseInt(color.substring(5,7),16);
-    R = parseInt(R * (100 + percent) / 100); G = parseInt(G * (100 + percent) / 100); B = parseInt(B * (100 + percent) / 100);
-    R = Math.min(255, R); G = Math.min(255, G); B = Math.min(255, B);
-    return "#" + ((1 << 24) + (R << 16) + (G << 8) + B).toString(16).slice(1);
 }
 
 let guestsList = [];
@@ -1197,7 +1266,6 @@ function spawnGuestAt(r, c) {
 }
 
 function update() {
-    // Basic guest animation
     guestsList.forEach(g => {
         if (Math.random() < 0.05) {
             g.r = Math.max(0, Math.min(GRID_SIZE-1, g.r + (Math.random()-0.5)*0.2));
@@ -1205,11 +1273,6 @@ function update() {
         }
     });
     for(let i=floatingTexts.length-1; i>=0; i--) { let ft = floatingTexts[i]; ft.y -= 1; ft.alpha -= 0.01; if(ft.alpha <= 0) floatingTexts.splice(i, 1); }
-}
-
-function drawGuest(ctx, g, sx, sy) {
-    ctx.fillStyle = g.color;
-    ctx.fillRect(sx - 3, sy - 10, 6, 10);
 }
 
 let currentScale = 1.0, mouseX = 0, mouseY = 0, isDragging = false, dragStartX, dragStartY, camStartX, camStartY;
@@ -1244,9 +1307,9 @@ function render() {
         }
     }
 
-    guestsList.forEach(g => { const { x, y } = toScreen(g.r, g.c); renderList.push({ type: 'guest', guestRef: g, x: x, y: y, z: g.r + g.c }); });
+    guestsList.forEach(g => { const { x, y } = toScreen(g.r, g.c); ctx.fillStyle = g.color; ctx.fillRect(x - 3, y - 10, 6, 10); });
     renderList.sort((a, b) => a.z - b.z);
-    renderList.forEach(item => { if (item.type === 'entity') drawEntity(item.entity); else if (item.type === 'guest') drawGuest(ctx, item.guestRef, item.x, item.y); });
+    renderList.forEach(item => { if (item.type === 'entity') drawEntity(item.entity); });
 
     floatingTexts.forEach(ft => { ctx.fillStyle = `rgba(${ft.colorRgb}, ${ft.alpha})`; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'center'; ctx.fillText(ft.text, ft.x, ft.y); });
     ctx.restore();
@@ -1296,7 +1359,7 @@ function toggleBuildWindow(category) {
     cancelModes(); const win = document.getElementById('build-window'); win.style.display = 'flex'; document.getElementById('build-window-title').innerText = category === 'path' ? '보도 설치' : category === 'ride' ? '놀이기구 건설' : category === 'shop' ? '상점 건설' : category === 'facility' ? '공원 시설' : '조경 배치';
     const catalog = document.getElementById('build-catalog'); catalog.innerHTML = '';
     CATALOG[category].forEach(item => {
-        const div = document.createElement('div'); div.className = 'build-item'; let costClass = 'item-cost'; if(item.ultra) costClass = 'item-cost ultra'; else if(item.premium) costClass = 'item-cost premium';
+        const div = document.createElement('div'); div.className = 'build-item'; let costClass = 'item-cost';
         div.innerHTML = `<div class="item-icon">${item.icon}</div><div class="item-name">${item.name}</div><div class="${costClass}">₩${formatMoney(item.cost)}</div>`;
         div.onclick = () => { document.querySelectorAll('.build-item').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); currentBuildItem = item; document.getElementById('build-cursor-tip').innerHTML = "건설할 위치를 클릭하세요<br>(취소: 빈 곳 우클릭 또는 도구모음 재클릭)"; document.getElementById('build-cursor-tip').style.display = 'block'; };
         catalog.appendChild(div);
@@ -1319,7 +1382,6 @@ setInterval(() => {
     }
 }, 3000);
 
-// Auto-save every 20 seconds
 setInterval(() => {
     if (currentNickname) {
         saveCurrentGameData();
@@ -1328,10 +1390,9 @@ setInterval(() => {
 
 function startGame() { gameStartTime = Date.now(); updateTopHUD(); setTimeout(centerCamera, 100); requestAnimationFrame(loop); }
 
-// Initialize DB on window load
 window.addEventListener('load', () => {
     initDB().then(() => {
-        console.log("Rollercoaster Tycoon DB initialized.");
+        console.log("DB System Initialized.");
     }).catch(e => console.error("DB init failed:", e));
 });
 </script>

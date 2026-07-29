@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>수학 코스터 타이쿤 (Supabase & Vercel)</title>
+<title>수학 코스터 타이쿤</title>
 <!-- Supabase Client JS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -40,8 +40,6 @@ canvas { display: block; width: 100%; height: 100%; }
 .item-icon { font-size: 32px; margin-bottom: 4px; line-height: 1; }
 .item-name { font-size: 12px; color: #fff; text-shadow: 1px 1px 0 #000; word-break: keep-all; }
 .item-cost { font-size: 11px; color: var(--money-green); margin-top: 2px; }
-.item-cost.premium { color: #ffaa00; font-weight: bold; text-shadow: 0 0 2px #ff4400; } 
-.item-cost.ultra { color: #ff33ff; font-weight: bold; text-shadow: 0 0 3px #bb00bb; font-size: 12px; } 
 
 /* MODAL OVERLAYS & PANELS */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(3px); }
@@ -57,7 +55,6 @@ canvas { display: block; width: 100%; height: 100%; }
 .quiz-options { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 15px; }
 .quiz-option { background: #e0e0e0; border-top: 2px solid #fff; border-left: 2px solid #fff; border-right: 2px solid #888; border-bottom: 2px solid #888; padding: 12px; font-size: 16px; cursor: pointer; font-family: inherit; color: #000; text-align: left; }
 .quiz-option:hover { background: #f0f0f0; }
-.quiz-option:active { border-top: 2px solid #888; border-left: 2px solid #888; border-right: 2px solid #fff; border-bottom: 2px solid #fff; padding-top: 14px; padding-left: 14px; }
 
 .short-answer-container { display: flex; gap: 8px; margin-bottom: 15px; }
 .short-answer-input { flex: 1; padding: 12px; font-family: 'Galmuri9', sans-serif; font-size: 16px; border: 2px solid #444; background: #fff; color: #000; user-select: text; -webkit-user-select: text; }
@@ -113,9 +110,6 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 #build-cursor-tip { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #ffcc00; padding: 8px 15px; border-radius: 15px; font-size: 13px; pointer-events: none; display: none; z-index: 10; text-align: center; border: 1px solid #ffcc00; }
 #toast-notification { position: fixed; top: 50px; left: 50%; transform: translateX(-50%); background: rgba(0, 50, 20, 0.9); color: #44ff44; border: 2px solid #44ff44; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; z-index: 300; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-.db-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-bottom: 10px; }
-.db-status-supabase { background: #10b981; color: #fff; }
-.db-status-local { background: #f59e0b; color: #fff; }
 </style>
 </head>
 <body>
@@ -126,16 +120,12 @@ canvas { display: block; width: 100%; height: 100%; }
 <div id="main-menu-modal" class="modal-overlay" style="display: flex;">
     <div class="retro-panel intro-box" style="padding: 25px; margin: 15px;">
         <h1 class="intro-title">수학 코스터<br>타이쿤</h1>
-        <div class="intro-sub-title">[ Supabase & Vercel 수학 코스터 ]</div>
-        
-        <div id="db-status-indicator" class="db-status-badge db-status-local">
-            ⚡ DB 상태: Local IndexedDB 사용 중
-        </div>
+        <div class="intro-sub-title">[ 롤러코스터 수학 퀴즈 탐험대 ]</div>
 
         <p style="font-size: 13px; color: #ffaa44; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; margin-bottom: 15px; line-height: 1.4;">
             💡 <b>게임 안내</b><br>
-            수학 문제를 풀어 자금을 모으고 최고의 놀이공원을 만드세요!<br>
-            교사 대시보드에서 Supabase DB 연결 및 CSV 문제를 설정할 수 있습니다.
+            수학 문제를 풀어 연구기금을 모으고 최고의 놀이공원을 만드세요!<br>
+            교사 대시보드에서 단원별 문제 추가 및 관리가 가능합니다.
         </p>
 
         <label style="color: #fff; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 15px; background: #333; padding: 6px 12px; border-radius: 6px;">
@@ -145,7 +135,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="start-btn-group">
             <button class="retro-button start-btn" style="background: #228844;" onclick="openAuthModal('new')">🎮 새로 시작하기</button>
             <button class="retro-button start-btn" style="background: #225588;" onclick="openAuthModal('load')">📂 이어하기 (저장된 게임)</button>
-            <button class="retro-button start-btn" style="background: #885522;" onclick="openTeacherDashboard()">👩‍🏫 교사 대시보드 (DB 및 문제 관리)</button>
+            <button class="retro-button start-btn" style="background: #885522;" onclick="promptTeacherAuth()">👩‍🏫 교사 대시보드 (문제 관리)</button>
         </div>
     </div>
 </div>
@@ -168,36 +158,35 @@ canvas { display: block; width: 100%; height: 100%; }
     </div>
 </div>
 
+<!-- TEACHER AUTH MODAL -->
+<div id="teacher-auth-modal" class="modal-overlay">
+    <div class="retro-panel intro-box" style="padding: 25px; margin: 15px;">
+        <h1 class="intro-title">👩‍🏫 교사 인증</h1>
+        <p class="intro-sub-title">교사 대시보드 접근을 위해 비밀번호를 입력하세요.</p>
+        
+        <div class="auth-input-group">
+            <input type="password" id="teacher-password-input" class="auth-input" placeholder="교사 비밀번호 입력" maxlength="20">
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="retro-button start-btn" style="flex: 1; background: #885522;" onclick="verifyTeacherPassword()">인증 및 입장</button>
+            <button class="retro-button start-btn" style="flex: 1; background: #666666;" onclick="closeTeacherAuthModal()">취소</button>
+        </div>
+    </div>
+</div>
+
 <!-- 3. TEACHER DASHBOARD MODAL -->
 <div id="teacher-modal" class="modal-overlay">
     <div class="retro-panel teacher-box">
         <div class="window-titlebar">
-            <span>👩‍🏫 교사 대시보드 (Supabase DB 및 CSV 문제 관리)</span>
+            <span>👩‍🏫 교사 대시보드 (수학 문제 및 단원 관리)</span>
             <div class="close-btn" onclick="closeTeacherDashboard()">X</div>
         </div>
         <div class="teacher-content">
-            <!-- SUPABASE CONFIGURATION CARD -->
-            <div class="teacher-card" style="border-color: #3ecf8e;">
-                <div class="teacher-card-title" style="color: #3ecf8e;">
-                    ⚡ Supabase 클라우드 데이터베이스 설정
-                </div>
-                <p style="font-size: 11px; color: #ccc; margin-bottom: 8px;">
-                    Supabase 프로젝트 URL과 Anon Key를 입력하여 클라우드 DB와 실시간 연결할 수 있습니다. (미입력 시 브라우저 내 로컬 DB 작동)
-                </p>
-                <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
-                    <input type="text" id="supabase-url-input" class="auth-input" style="font-size: 12px; text-align: left; padding: 8px;" placeholder="Supabase Project URL (https://xyz.supabase.co)">
-                    <input type="password" id="supabase-key-input" class="auth-input" style="font-size: 12px; text-align: left; padding: 8px;" placeholder="Supabase Anon Key (eyJhbGciOi...)">
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="retro-button" style="padding: 6px 12px; background: #10b981; font-size: 12px;" onclick="saveSupabaseConfig()">⚡ Supabase 연결 저장 및 테스트</button>
-                    <button class="retro-button" style="padding: 6px 12px; background: #666; font-size: 12px;" onclick="clearSupabaseConfig()">로컬 DB 모드로 전환</button>
-                </div>
-            </div>
-
             <div class="teacher-card">
                 <div class="teacher-card-title">📥 1. 문제 작성용 CSV 기본 포맷 양식 다운로드</div>
                 <p style="font-size: 12px; color: #ddd; margin-bottom: 10px;">
-                    엑셀(Excel)이나 한글에서 수정 가능한 CSV 양식을 다운로드합니다.
+                    엑셀(Excel)이나 한글에서 수정 가능한 CSV 양식을 다운로드합니다. 단원명, 유형(객관식/주관식), 문제, 선택지, 정답, 해설, 힌트를 입력할 수 있습니다.
                 </p>
                 <button class="retro-button" style="padding: 8px 16px; background: #225588; font-size: 13px; font-weight: bold;" onclick="downloadSampleCSV()">
                     📄 기본 CSV 양식 다운로드 (.csv)
@@ -221,7 +210,7 @@ canvas { display: block; width: 100%; height: 100%; }
                         🔄 기본 문제로 초기화
                     </button>
                 </div>
-                <div id="questions-summary-list" style="max-height: 180px; overflow-y: auto;"></div>
+                <div id="questions-summary-list" style="max-height: 200px; overflow-y: auto;"></div>
             </div>
             
             <button class="retro-button" style="padding: 12px; background: #444; width: 100%; font-weight: bold;" onclick="closeTeacherDashboard()">닫기</button>
@@ -323,8 +312,12 @@ canvas { display: block; width: 100%; height: 100%; }
 
 <script>
 /* ==========================================================================
-   1. HYBRID DATABASE LAYER (SUPABASE + INDEXEDDB FALLBACK)
+   1. DATABASE CONFIGURATION (SILENT BACKGROUND CONNECTIVITY)
    ========================================================================== */
+const DEFAULT_SUPABASE_URL = "https://anahupoathfzihixuiyt.supabase.co";
+const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuYWh1cG9hdGhmemloaXh1aXl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNzIwNjEsImV4cCI6MjEwMDg0ODA2MX0.YJCXmEuq_9Ic87Kro4BWXz0_qlSubQEHxzWGqaBO-6Y";
+const TEACHER_PASSWORD_CONFIG = "1234";
+
 let supabaseClient = null;
 let useSupabase = false;
 
@@ -332,62 +325,22 @@ const DB_NAME = 'RollercoasterTycoonDB';
 const DB_VERSION = 1;
 let localDb = null;
 
-// Initialize Supabase Client if credentials exist
 function initSupabaseClient() {
-    const url = localStorage.getItem('RTC_SUPABASE_URL') || '';
-    const key = localStorage.getItem('RTC_SUPABASE_KEY') || '';
+    const url = DEFAULT_SUPABASE_URL;
+    const key = DEFAULT_SUPABASE_KEY;
     
     if (url && key && window.supabase) {
         try {
             supabaseClient = window.supabase.createClient(url, key);
             useSupabase = true;
-            updateDBStatusUI(true);
-            console.log("⚡ Supabase Client initialized.");
+            console.log("Database initialized.");
             return true;
         } catch (e) {
-            console.error("Supabase init error:", e);
+            console.error("Database connection error:", e);
         }
     }
     useSupabase = false;
-    updateDBStatusUI(false);
     return false;
-}
-
-function updateDBStatusUI(isSupabase) {
-    const indicator = document.getElementById('db-status-indicator');
-    if (!indicator) return;
-    if (isSupabase) {
-        indicator.className = "db-status-badge db-status-supabase";
-        indicator.innerText = "⚡ DB 상태: Supabase 클라우드 연결됨";
-    } else {
-        indicator.className = "db-status-badge db-status-local";
-        indicator.innerText = "⚡ DB 상태: Local IndexedDB 사용 중";
-    }
-}
-
-function saveSupabaseConfig() {
-    const url = document.getElementById('supabase-url-input').value.trim();
-    const key = document.getElementById('supabase-key-input').value.trim();
-    if (!url || !key) {
-        alert("Supabase URL과 Key를 모두 입력해주세요.");
-        return;
-    }
-    localStorage.setItem('RTC_SUPABASE_URL', url);
-    localStorage.setItem('RTC_SUPABASE_KEY', key);
-    if (initSupabaseClient()) {
-        showToast("⚡ Supabase 클라우드 데이터베이스에 연결되었습니다!");
-    } else {
-        alert("Supabase 연결 실패. URL 및 Key를 다시 확인해주세요.");
-    }
-}
-
-function clearSupabaseConfig() {
-    localStorage.removeItem('RTC_SUPABASE_URL');
-    localStorage.removeItem('RTC_SUPABASE_KEY');
-    supabaseClient = null;
-    useSupabase = false;
-    updateDBStatusUI(false);
-    showToast("로컬 IndexedDB 모드로 전환되었습니다.");
 }
 
 function initDB() {
@@ -456,10 +409,10 @@ async function dbSaveUserData(nickname, password, gameData) {
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'nickname' });
             if (error) throw error;
-            console.log("Saved to Supabase:", nickname);
+            console.log("Saved to cloud DB:", nickname);
             return;
         } catch (err) {
-            console.error("Supabase Save Failed, falling back to LocalIndexedDB:", err);
+            console.error("Cloud DB Save Failed, falling back to LocalIndexedDB:", err);
         }
     }
     
@@ -481,12 +434,12 @@ async function dbGetUserData(nickname) {
                 .select('*')
                 .eq('nickname', nickname)
                 .single();
-            if (error && error.code !== 'PGRST116') throw error; // PGRST116 is no rows
+            if (error && error.code !== 'PGRST116') throw error;
             if (data) {
                 return { nickname: data.nickname, password: data.password, gameData: data.game_data };
             }
         } catch (err) {
-            console.error("Supabase Read Failed, falling back to LocalIndexedDB:", err);
+            console.error("Cloud DB Read Failed, falling back to LocalIndexedDB:", err);
         }
     }
     
@@ -521,7 +474,7 @@ async function dbGetAllQuestions() {
                 }));
             }
         } catch (err) {
-            console.error("Supabase Questions Fetch Failed, falling back to LocalIndexedDB:", err);
+            console.error("Cloud DB Questions Fetch Failed, falling back to LocalIndexedDB:", err);
         }
     }
     
@@ -554,7 +507,7 @@ async function dbAddQuestions(questionsArray) {
             if (error) throw error;
             return;
         } catch (err) {
-            console.error("Supabase Insert Questions Failed, falling back to LocalIndexedDB:", err);
+            console.error("Cloud DB Insert Questions Failed, falling back to LocalIndexedDB:", err);
         }
     }
     
@@ -574,7 +527,7 @@ async function dbResetQuestions() {
             await supabaseClient.from('quiz_questions').delete().eq('is_custom', true);
             return;
         } catch (err) {
-            console.error("Supabase Reset Questions Failed:", err);
+            console.error("Cloud DB Reset Questions Failed:", err);
         }
     }
     
@@ -688,7 +641,31 @@ async function submitAuth() {
 }
 
 /* ==========================================================================
-   4. GAME STATE SAVE / LOAD ENGINE
+   4. TEACHER AUTHENTICATION
+   ========================================================================== */
+function promptTeacherAuth() {
+    document.getElementById('teacher-password-input').value = '';
+    document.getElementById('main-menu-modal').style.display = 'none';
+    document.getElementById('teacher-auth-modal').style.display = 'flex';
+}
+
+function closeTeacherAuthModal() {
+    document.getElementById('teacher-auth-modal').style.display = 'none';
+    document.getElementById('main-menu-modal').style.display = 'flex';
+}
+
+function verifyTeacherPassword() {
+    const inputPass = document.getElementById('teacher-password-input').value.trim();
+    if (inputPass === TEACHER_PASSWORD_CONFIG) {
+        document.getElementById('teacher-auth-modal').style.display = 'none';
+        openTeacherDashboard();
+    } else {
+        alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
+    }
+}
+
+/* ==========================================================================
+   5. GAME STATE SAVE / LOAD ENGINE
    ========================================================================== */
 function serializeGameData() {
     let gridMapState = [];
@@ -810,16 +787,10 @@ function resetGameVariables() {
 }
 
 /* ==========================================================================
-   5. TEACHER DASHBOARD & CSV SYSTEM
+   6. TEACHER DASHBOARD & CSV SYSTEM
    ========================================================================== */
 async function openTeacherDashboard() {
-    document.getElementById('main-menu-modal').style.display = 'none';
     document.getElementById('teacher-modal').style.display = 'flex';
-    
-    // Fill Supabase Inputs
-    document.getElementById('supabase-url-input').value = localStorage.getItem('RTC_SUPABASE_URL') || '';
-    document.getElementById('supabase-key-input').value = localStorage.getItem('RTC_SUPABASE_KEY') || '';
-    
     await renderQuestionsSummaryTable();
 }
 
@@ -980,7 +951,7 @@ async function resetDefaultQuestions() {
 }
 
 /* ==========================================================================
-   6. QUIZ ENGINE WITH UNIT SELECTION & SHORT ANSWER SUPPORT
+   7. QUIZ ENGINE WITH UNIT SELECTION & SHORT ANSWER SUPPORT
    ========================================================================== */
 let activeQuestions = [];
 let currentUnit = '전체 단원';
@@ -1149,7 +1120,7 @@ function continueGame() {
 }
 
 /* ==========================================================================
-   7. ISOMETRIC ENGINE & RENDERER
+   8. ISOMETRIC ENGINE & RENDERER
    ========================================================================== */
 const BGM_TRACKS = [
     "https://cdn.jsdelivr.net/gh/photonstorm/phaser-examples@master/examples/assets/audio/oedipus_wizball_highscore.mp3",
